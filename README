@@ -1,0 +1,25 @@
+This plugin is for people who want to add Wordpress to a Vanilla Forum community. 
+
+WARNING
+=======
+If you already have an existing Wordpress site and just installed a new Vanilla forum, this *IS NOT* the plugin for you. See the "VanillaForums" plugin for Wordpress instead.
+
+VanillaPress will forcefully sync your Wordpress Users table to your Vanilla User table. This means existing Wordpress-only users WILL BE DELETED FOREVER.
+
+This means even your Wordpress admin users will be deleted. You will log in with your Vanilla admin account after install.
+
+BACKUP YOUR DATABASE, CONFIG FILES, AND ANY CUSTOMIZATIONS BEFORE INSTALLING VANILLAPRESS.
+
+REQUIREMENTS
+============
+1. Wordpress 3.0 and Vanilla 2.0.18
+2. Wordpress and Vanilla MUST be installed in the same database.
+3. Wordpress and Vanilla MUST be accessed from the same domain.
+
+INSTRUCTIONS
+============
+0. Order matters.
+1. Copy the contents of the 'Wordpress Plugin' folder to Wordpress' wp-content/plugins folder.
+2. Copy the contents of the 'Vanilla Plugin' folder to Vanilla's plugins folder.
+3. Go to Vanilla's Dashboard and enable the VanillaPress plugin.
+4. Go to Wordpress' Dashboard and enable the VanillaPress plugin.
