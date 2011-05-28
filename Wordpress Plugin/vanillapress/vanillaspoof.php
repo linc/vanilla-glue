@@ -4,6 +4,7 @@
  */
  
 // Vanilla Path (temporary hack)
+// @todo
 define('VANILLA_PATH', '../../../forum/');
  
 class Gdn {
