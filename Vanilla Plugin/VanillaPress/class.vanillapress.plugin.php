@@ -55,6 +55,45 @@ class VanillaPressPlugin extends Gdn_Plugin {
    public function DiscussionController_Something2_Handler($Sender) {
       
    }
+   
+   /**
+	 * Port user to WordPress if it doesn't exist yet.
+	 */
+   public function UserModel_AfterSave_Handler($Sender) {
+      // Prep DB
+      $Database = Gdn::Database();
+      $SQL = $Database->SQL();
+      $UserID = $Sender->EventArguments['UserID'];
+      
+      // Check if user already exists
+      if ($SQL->Query("select * from wp_users where ID = '$UserID'")->FirstRow())
+         return;
+      
+      // Get user data
+      $User = $SQL->Select('*')->From('User')->Where('UserID', $UserID)->Get()->FirstRow();
+
+      // Main user record
+   	$SQL->Query("INSERT INTO wp_users SET
+   		ID = '".$UserID."',
+   		user_login = '".mysql_real_escape_string($User->Name)."',
+   		user_pass = '".mysql_real_escape_string($User->Password)."',
+   		user_nicename = '".mysql_real_escape_string(strtolower($User->Name))."',
+   		user_email = '".mysql_real_escape_string($User->Email)."',
+   		user_registered = '".mysql_real_escape_string(date( 'Y-m-d H:i:s', $User->DateInserted))."',
+   		display_name = '".mysql_real_escape_string($User->Name)."'");
+   	   	
+   	// Nickname
+   	$SQL->Query("INSERT INTO wp_usermeta SET
+   		user_id = '".$UserID."',
+   		meta_key = 'nickname',
+   		meta_value = '".mysql_real_escape_string($User->Name)."'");
+   	
+   	// Permissions per-blog
+      $SQL->Query("INSERT INTO wp_usermeta SET
+   		user_id = '".$UserID."',
+   		meta_key = 'wp_capabilities',
+		   meta_value = 'a:1:{s:10:\"subscriber\";b:1;}'");
+   }   
 	
 	/**
 	 * 1-Time on Disable.
