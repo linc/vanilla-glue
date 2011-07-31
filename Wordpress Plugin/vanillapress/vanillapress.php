@@ -17,6 +17,7 @@ Author URI: http://lincolnwebs.com
 // Vanilla table prefix
 // @todo
 define('VANILLA_PREFIX', 'GDN_');
+define('APPLICATION', TRUE);
 
 // Hooks
 register_activation_hook(__FILE__, 'vanillapress_activate');
@@ -27,20 +28,74 @@ add_action('vanilla_comments', 'vanillapress_get_comments');
 add_action('vanilla_postinfo', 'vanillapress_get_postinfo');
 
 /**
+ * Wipe current WordPress users and replace with Vanilla users.
+ */
+function vanillapress_activate() {
+   global $wpdb;
+   
+   # Structure - empty everything
+   $wpdb->query("TRUNCATE TABLE wp_users");
+   $wpdb->query("TRUNCATE TABLE wp_usermeta");
+   
+   # Get all users
+   $vanilla_users = $wpdb->get_results("SELECT u.*, 
+      (SELECT Value FROM GDN_UserMeta m WHERE m.UserID = u.UserID AND Name = 'display_name') as display_name,
+      (SELECT Value FROM GDN_UserMeta m WHERE m.UserID = u.UserID AND Name = 'user_url') as user_url
+      FROM GDN_User u");
+   
+   # Import users
+   foreach ($vanilla_users as $a) {
+   	# Get display_name, user_url from UserMeta
+      $display_name = ($a['display_name']) ? $a['display_name'] : $a['Name'];
+      $user_url = ($a['user_url']) ? $a['user_url'] : '';
+      
+      # Main user record
+   	$wpdb->query("INSERT INTO wp_users SET
+   		ID = '".$a['UserID']."',
+   		user_login = ".e($a['Name']).",
+   		user_pass = ".e($a['Password']).",
+   		user_nicename = ".e(strtolower($a['Name'])).",
+   		user_email = ".e($a['Email']).",
+   		user_url = ".e($user_url).",
+   		user_registered = ".e(date( 'Y-m-d H:i:s', $a['DateInserted'])).",
+   		display_name = ".e($display_name)."
+   	");
+   	
+   	# Nickname
+   	$wpdb->query("INSERT INTO wp_usermeta SET
+   		user_id = '".$a['UserID']."',
+   		meta_key = 'nickname',
+   		meta_value = '".mysql_real_escape_string($a['Name'])."'");
+   	
+   	# Permissions per-blog
+      $wpdb->query("INSERT INTO wp_usermeta SET
+   		user_id = '".$a['UserID']."',
+   		meta_key = 'wp_capabilities',
+   		meta_value = 'a:1:{s:10:\"subscriber\";b:1;}'"); # Theoretically it will fix this at first login where appropriate
+   }
+
+   // Set admins
+   $wpdb->query("UPDATE wp_usermeta SET meta_value = 'a:1:{s:13:\"administrator\";b:1;}' WHERE meta_key = 'wp_capabilities' AND 
+      (user_id IN (SELECT ID from GDN_User WHERE Admin = '1')");
+}
+
+/**
  * Authenticate users from Vanilla cookie.
  */
 function vanillapress_authenticate() {
    // Get & authenticate Vanilla cookie
-   require_once('vanillaspoof.php');
-   require_once('class.cookieidentity.php');
+   require_once(__DIR__.'/vanillaspoof.php');
+   require_once(__DIR__.'/vanillacookieidentity.php');
    $auth_object = new Gdn_CookieIdentity();
    $userid = $auth_object->GetIdentity();
    
    // Set WordPress cookie
 	if ($userid > 0) {
+	  die('close!')
 		wp_set_auth_cookie($userid, true);
 		setup_userdata($userid);
 	}
+	die('no cigar');
 }
 
 /**

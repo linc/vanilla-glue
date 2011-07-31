@@ -5,25 +5,25 @@
  
 // Vanilla Path (temporary hack)
 // @todo
-define('VANILLA_PATH', '../../../forum/');
+define('VANILLA_PATH', '../../../');
  
 class Gdn {
    // Spoof Gdn::Config()
-   public static function Config($Value, $DefaultValue) {
+   public static function Config($Name, $DefaultValue = '') {
       // Get $Configuration
-      include(VANILLA_PATH.'conf/config-defaults.php');
-      include(VANILLA_PATH.'conf/config.php');
+      require(VANILLA_PATH.'conf/config-defaults.php');
+      require(VANILLA_PATH.'conf/config.php');
       
       // From Configuration::Get
       $Path = explode('.', $Name);
       
       $Value = $Configuration;
       $Count = count($Path);
-      for($i = 0; $i < $Count; ++$i) {
+      for($i = 0; $i <= $Count; ++$i) {
          if(is_array($Value) && array_key_exists($Path[$i], $Value)) {
             $Value = $Value[$Path[$i]];
          } else {
-            return $DefaultValue;
+            return $Value;
          }
       }
    }
@@ -54,4 +54,77 @@ if (!function_exists('ArrayValue')) {
       $Result = GetValue($Needle, $Haystack, $Default);
 		return $Result;
    }
+}
+
+if (!function_exists('GetValue')) {
+	/**
+	 * Return the value from an associative array or an object.
+	 *
+	 * @param string $Key The key or property name of the value.
+	 * @param mixed $Collection The array or object to search.
+	 * @param mixed $Default The value to return if the key does not exist.
+    * @param bool $Remove Whether or not to remove the item from the collection.
+	 * @return mixed The value from the array or object.
+	 */
+	function GetValue($Key, &$Collection, $Default = FALSE, $Remove = FALSE) {
+		$Result = $Default;
+		if(is_array($Collection) && array_key_exists($Key, $Collection)) {
+			$Result = $Collection[$Key];
+         if($Remove)
+            unset($Collection[$Key]);
+		} elseif(is_object($Collection) && property_exists($Collection, $Key)) {
+			$Result = $Collection->$Key;
+         if($Remove)
+            unset($Collection->$Key);
+      }
+			
+      return $Result;
+	}
+}
+
+if (!function_exists('StringEndsWith')) {
+   /** Checks whether or not string A ends with string B.
+    *
+    * @param string $Haystack The main string to check.
+    * @param string $Needle The substring to check against.
+    * @param bool $CaseInsensitive Whether or not the comparison should be case insensitive.
+    * @param bool Whether or not to trim $B off of $A if it is found.
+    * @return bool|string Returns true/false unless $Trim is true.
+    */
+   function StringEndsWith($Haystack, $Needle, $CaseInsensitive = FALSE, $Trim = FALSE) {
+      if (strlen($Haystack) < strlen($Needle))
+         return FALSE;
+      elseif (strlen($Needle) == 0) {
+         if ($Trim)
+            return $Haystack;
+         return TRUE;
+      } else {
+         $Result = substr_compare($Haystack, $Needle, -strlen($Needle), strlen($Needle), $CaseInsensitive) == 0;
+         if ($Trim)
+            $Result = $Result ? substr($Haystack, 0, -strlen($Needle)) : $Haystack;
+         return $Result;
+      }
+   }
+}
+
+if (!function_exists('CompareHashDigest')) {
+    /**
+     * Returns True if the two strings are equal, False otherwise.
+     * The time taken is independent of the number of characters that match.
+     *
+     * This snippet prevents HMAC Timing attacks ( http://codahale.com/a-lesson-in-timing-attacks/ )
+     * Thanks to Eric Karulf (ekarulf @ github) for this fix.
+     */
+   function CompareHashDigest($Digest1, $Digest2) {
+        if (strlen($Digest1) !== strlen($Digest2)) {
+            return false;
+        }
+
+        $Result = 0;
+        for ($i = strlen($Digest1) - 1; $i >= 0; $i--) {
+            $Result |= ord($Digest1[$i]) ^ ord($Digest2[$i]);
+        }
+
+        return 0 === $Result;
+    }
 }

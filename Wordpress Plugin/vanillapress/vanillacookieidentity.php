@@ -34,17 +34,11 @@ class Gdn_CookieIdentity {
    }
    
    public function Init($Config = NULL) {
-      if (is_null($Config))
-         $Config = Gdn::Config('Garden.Cookie');
-      elseif(is_string($Config))
-         $Config = Gdn::Config($Config);
-         
-      $DefaultConfig = Gdn::Config('Garden.Cookie');         
-      $this->CookieName = ArrayValue('Name', $Config, $DefaultConfig['Name']);
-      $this->CookiePath = ArrayValue('Path', $Config, $DefaultConfig['Path']);
-      $this->CookieDomain = ArrayValue('Domain', $Config, $DefaultConfig['Domain']);
-      $this->CookieHashMethod = ArrayValue('HashMethod', $Config, $DefaultConfig['HashMethod']);
-      $this->CookieSalt = ArrayValue('Salt', $Config, $DefaultConfig['Salt']);
+      $this->CookieName = Gdn::Config('Garden.Cookie.Name');
+      $this->CookiePath = Gdn::Config('Garden.Cookie.Path');
+      $this->CookieDomain = Gdn::Config('Garden.Cookie.Domain');
+      $this->CookieHashMethod = Gdn::Config('Garden.Cookie.HashMethod');
+      $this->CookieSalt = Gdn::Config('Garden.Cookie.Salt');
       $this->VolatileMarker = $this->CookieName.'-Volatile';
    }
    
