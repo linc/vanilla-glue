@@ -75,7 +75,7 @@ function vanillapress_activate() {
    }
 
    // Set admins
-   $wpdb->query("UPDATE wp_usermeta SET meta_value = 'a:1:{s:13:\"administrator\";b:1;}' WHERE meta_key = 'wp_capabilities' AND 
+   $wpdb->query("UPDATE wp_usermeta SET meta_value = 'a:1:{s:13:\"administrator\";s:1:\"1\";}' WHERE meta_key = 'wp_capabilities' AND 
       (user_id IN (SELECT ID from GDN_User WHERE Admin = '1')");
 }
 
