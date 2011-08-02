@@ -17,8 +17,8 @@ class VanillaPressPlugin extends Gdn_Plugin {
 	 */
    public function Base_GetAppSettingsMenuItems_Handler(&$Sender) {
       $Menu = &$Sender->EventArguments['SideMenu'];
-      //$Menu->AddItem('Forum', T('Wordpress'));
-      //$Menu->AddLink('Forum', T('Wordpress'), 'settings/vanillapress', 'VanillaPress.Settings.Manage');
+      //$Menu->AddItem('Forum', T('WordPress'));
+      //$Menu->AddLink('Forum', T('WordPress'), 'settings/vanillapress', 'VanillaPress.Settings.Manage');
    }
 
 	/**
@@ -93,33 +93,48 @@ class VanillaPressPlugin extends Gdn_Plugin {
    		user_id = '".$UserID."',
    		meta_key = 'wp_capabilities',
 		   meta_value = 'a:1:{s:10:\"subscriber\";b:1;}'");
-   }   
-	
-	/**
-	 * 1-Time on Disable.
+   }
+   
+   /**
+	 * Update WordPress permissions upon edit user.
 	 */
-   public function OnDisable() {
+   public function UserController_Something_Handler($Sender) {
+      
+   }
+   
+   /**
+	 * Update WordPress posts comment_count.
+	 */
+   public function PostController_Something_Handler($Sender) {
       
    }
 
 	/**
-	 * 1-Time on Install.
+	 * 1-Time on install.
 	 */
    public function Setup() {
-      // Add some fields to the database
       $Structure = Gdn::Structure();
       
+      // Associate discussions with posts
       $Structure->Table('Discussion')
          ->Column('WordPressID', 'int', TRUE)
          ->Set();
-         
+      
+      // Enable guest data
       $Structure->Table('Comment')
          ->Column('GuestName', 'varchar(64)', TRUE)
          ->Column('GuestEmail', 'varchar(64)', TRUE)
          ->Column('GuestUrl', 'varchar(128)', TRUE)
          ->Set();
       
-      //SaveToConfig('Vanilla.Comments.AutoOffset', FALSE);
+      // Create WordPress roles
+      $RoleModel = Gdn::Factory('RoleModel');
+      $RoleModel->Database = Gdn::Database();
+      $RoleModel->SQL = $RoleModel->DatabaseDatabase->SQL();
+      $RoleModel->Define(array('Name' => 'WordPress Contributor', 'Deletable' => '1', 'CanSession' => '1', 'Description' => 'Gives user "Contributor" role on WordPress blog.'));
+      $RoleModel->Define(array('Name' => 'WordPress Author', 'Deletable' => '1', 'CanSession' => '1', 'Description' => 'Gives user "Author" role on WordPress blog.'));
+      $RoleModel->Define(array('Name' => 'WordPress Editor', 'Deletable' => '1', 'CanSession' => '1', 'Description' => 'Gives user "Editor" role on WordPress blog.'));
+      unset($RoleModel);
    }
 	
 }

@@ -10,8 +10,8 @@ Author URI: http://lincolnwebs.com
 
 /**
  * Required WP template additions:
- * Add to comments.php template: do_action('vanilla_comments', $post_id);
- * Add to single.php template: do_action('vanilla_postinfo', $post_id);
+ * Add to comments.php template: global $vanilla_comments; do_action('vanilla_comments', $post_id);
+ * Add to single.php template: global $vanilla_postinfo; do_action('vanilla_postinfo', $post_id);
  */
 
 // Vanilla table prefix
@@ -84,18 +84,16 @@ function vanillapress_activate() {
  */
 function vanillapress_authenticate() {
    // Get & authenticate Vanilla cookie
-   require_once(__DIR__.'/vanillaspoof.php');
+   require_once(__DIR__.'/vanillaspoof.php'); # Requires 5.3 :-/
    require_once(__DIR__.'/vanillacookieidentity.php');
    $auth_object = new Gdn_CookieIdentity();
    $userid = $auth_object->GetIdentity();
    
    // Set WordPress cookie
 	if ($userid > 0) {
-	  die('close!')
 		wp_set_auth_cookie($userid, true);
 		setup_userdata($userid);
 	}
-	die('no cigar');
 }
 
 /**
@@ -178,31 +176,27 @@ function vanillapress_add_comment($commentid) {
  * Get comments to display in WordPress.
  */
 function vanillapress_get_comments($postid) {
-	global $wpdb;
+	global $wpdb, $vanilla_comments;
 	
 	// Get DiscussionID
 	$discussionid = get_post_meta($comment->comment_post_ID, 'discussionid', true);
    
 	// Get all comments from discussion
 	// @todo Add a limit or pagination
-   $comments = $wpdb->get_results("SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo
+   $vanilla_comments = $wpdb->get_results("SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo
       FROM {VANILLA_PREFIX}Comment c
       LEFT JOIN {VANILLA_PREFIX}User u ON u.UserID = c.InsertUserID
       WHERE DiscussionID = $discussionid 
       ORDER BY DateInserted ASC");
-   
-	return $comments;
 }
 
 /**
  * Get extra post meta from Vanilla.
  */
 function vanillapress_get_postinfo($postid) {
-	global $wpdb;
+	global $wpdb, $vanilla_postinfo;
 
 	// Get DiscussionID, author, replycount
-	$post = $wpdb->get_row("SELECT p.post_author as user_id, p.vb_threadid as thread_id 
+	$vanilla_postinfo = $wpdb->get_row("SELECT p.post_author as user_id, p.vb_threadid as thread_id 
 		FROM $wpdb->posts p WHERE p.ID = '$postid'");
-		
-   return $post;
 }
