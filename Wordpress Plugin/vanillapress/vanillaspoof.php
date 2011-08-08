@@ -3,29 +3,19 @@
  * Spoofing framework's existence for Gdn_CookieIdentity.
  */
  
-// Vanilla Path (temporary hack)
-// @todo
-define('VANILLA_PATH', '../../../');
- 
+define('VANILLA_PATH', '../../../'); // @todo Undo this hack
+define('APPLICATION', TRUE);
+
 class Gdn {
    // Spoof Gdn::Config()
    public static function Config($Name, $DefaultValue = '') {
       // Get $Configuration
       require(VANILLA_PATH.'conf/config-defaults.php');
       require(VANILLA_PATH.'conf/config.php');
-      
-      // From Configuration::Get
-      $Path = explode('.', $Name);
-      
-      $Value = $Configuration;
-      $Count = count($Path);
-      for($i = 0; $i <= $Count; ++$i) {
-         if(is_array($Value) && array_key_exists($Path[$i], $Value)) {
-            $Value = $Value[$Path[$i]];
-         } else {
-            return $Value;
-         }
-      }
+      if(is_array($Configuration) && array_key_exists($Configuration, $Name))
+         return $Configuration[$Name];
+      else 
+         return $DefaultValue;
    }
    
    // Spoof Gdn::Request()->Host()
@@ -128,3 +118,6 @@ if (!function_exists('CompareHashDigest')) {
         return 0 === $Result;
     }
 }
+
+$Prefix = Gdn::Config('Garden.Database.Prefix');
+define('VANILLA_PREFIX', $Prefix);
