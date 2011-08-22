@@ -56,7 +56,7 @@ function vanillapress_add_discussion($postid) {
 	$the_post = get_post($postid);
 	
 	// CategoryID
-	$categoryid = Gdn::Config('Plugins.WordPress.Category', 1);
+	$categoryid = Gdn::Config('Plugins.WordPress.Category', 3);
    
 	// UserID
 	$userid = intval($the_post->post_author);
@@ -67,15 +67,15 @@ function vanillapress_add_discussion($postid) {
 	$body = '<a href="'.$link.'">'.$the_post->post_title.'</a>';
    
 	// Create Discussion
-   $discussionid = $wpdb->query("INSERT INTO {VANILLA_PREFIX}Discussion (CategoryID, InsertUserID, Name, Body, Format, DateInserted) VALUES (
-      $categoryid,
-      $userid,
-      ".$wpdb->escape($title).",
-      ".$wpdb->escape($body).",
-      'Html',
-      NOW()
-   )");
-   
+   $discussionid = $wpdb->insert(VANILLA_PREFIX.'Discussion', array(
+      'CategoryID' => $categoryid, 
+      'InsertUserID' => $userid, 
+      'Name' => $title, 
+      'Body' => $body, 
+      'Format' => 'Html', 
+      'DateInserted' => date('Y-m-d H:i:s'))
+   );
+
    // Update Post
    update_post_meta($postid, 'discussionid', $discussionid);
    
@@ -96,19 +96,23 @@ function vanillapress_add_comment($commentid) {
 	$discussionid = get_post_meta($comment->comment_post_ID, 'discussionid', true);
    
 	// Create Comment
-	// unused:$comment->comment_approved;
-	$wpdb->query("INSERT INTO {VANILLA_PREFIX}Comment (DiscussionID, InsertUserID, Body, Format, DateInserted, InsertIPAddress, GuestName, GuestEmail, GuestUrl) 
-      VALUES (
-         $discussionid, 
-         {$comment->user_id}, 
-         ".$wpdb->escape($comment->comment_content).",
-         'Html',
-         {$comment->comment_date},
-         {$comment->comment_author_IP},
-         ".$wpdb->escape($comment->comment_author).",
-         ".$wpdb->escape($comment->comment_author_email).",
-         ".$wpdb->escape($comment->comment_author_url)."
-      )");
+	$wpdb->insert(VANILLA_PREFIX.'Comment', array(
+	  'DiscussionID' => $discussionid, 
+	  'InsertUserID' => $comment->user_id, 
+	  'Body' => $comment->comment_content, 
+	  'Format' => 'Html', 
+	  'DateInserted' => $comment->comment_date, 
+	  'InsertIPAddress' => $comment->comment_author_IP, 
+	  'GuestName' => $comment->comment_author, 
+	  'GuestEmail' => $comment->comment_author_email, 
+	  'GuestUrl' => $comment->comment_author_url
+   )); // $comment->comment_approved;
+    
+   // Update discussion meta
+   $wpdb->update(VANILLA_PREFIX.'Discussion', 
+      array('DateLastComment' => $comment->comment_date, 'LastCommentUserID' => $comment->user_id), 
+      array('ID' => $discussionid)
+   );
 	
 	// Update counters
 	// @todo
@@ -116,18 +120,20 @@ function vanillapress_add_comment($commentid) {
 
 /**
  * Get comments to display in WordPress.
+ *
+ * @todo Add a limit or pagination
  */
 function vanillapress_get_comments($postid) {
-	global $wpdb, $vanilla_comments;
+	global $wpdb, $vanilla_comments, $discussionid;
+	$discussionid = 0;
 	
 	// Get DiscussionID
-	$discussionid = get_post_meta($comment->comment_post_ID, 'discussionid', true);
+	$discussionid = get_post_meta($postid, 'discussionid', true);
    
 	// Get all comments from discussion
-	// @todo Add a limit or pagination
    $vanilla_comments = $wpdb->get_results("SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo
-      FROM {VANILLA_PREFIX}Comment c
-      LEFT JOIN {VANILLA_PREFIX}User u ON u.UserID = c.InsertUserID
+      FROM ".VANILLA_PREFIX."Comment c
+      LEFT JOIN ".VANILLA_PREFIX."User u ON u.UserID = c.InsertUserID
       WHERE DiscussionID = $discussionid 
       ORDER BY DateInserted ASC");
 }

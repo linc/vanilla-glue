@@ -8,14 +8,28 @@ define('APPLICATION', TRUE);
 
 class Gdn {
    // Spoof Gdn::Config()
-   public static function Config($Name, $DefaultValue = '') {
+   public function Config($Name, $DefaultValue = FALSE) {
       // Get $Configuration
       require(VANILLA_PATH.'conf/config-defaults.php');
       require(VANILLA_PATH.'conf/config.php');
-      if(is_array($Configuration) && array_key_exists($Configuration, $Name))
-         return $Configuration[$Name];
-      else 
-         return $DefaultValue;
+      
+      $Path = explode('.', $Name);
+      
+      $Count = count($Path);
+      for($i = 0; $i < $Count; ++$i) {
+         if(is_array($Configuration) && array_key_exists($Path[$i], $Configuration)) {
+            $Configuration = $Configuration[$Path[$i]]; 
+         } else {
+            return $DefaultValue;
+         }
+      }
+      
+      if(is_string($Configuration))
+         $Result = Gdn_Format::Unserialize($Configuration);
+      else
+         $Result = $Configuration;
+
+      return $Result;
    }
    
    // Spoof Gdn::Request()->Host()
@@ -28,6 +42,23 @@ class Gdn {
 class Gdn_Request {
    public function Host() {
       return isset($_SERVER['HTTP_HOST']) ? ArrayValue('HTTP_HOST',$_SERVER) : ArrayValue('SERVER_NAME',$_SERVER);
+   }
+}
+
+// Spoof Gdn_Format::Unserialize()
+class Gdn_Format {
+   public static function Unserialize($SerializedString) {
+		$Result = $SerializedString;
+		
+      if(is_string($SerializedString)) {
+			if(substr_compare('a:', $SerializedString, 0, 2) === 0 || substr_compare('O:', $SerializedString, 0, 2) === 0)
+				$Result = unserialize($SerializedString);
+			elseif(substr_compare('obj:', $SerializedString, 0, 4) === 0)
+            $Result = json_decode(substr($SerializedString, 4), FALSE);
+         elseif(substr_compare('arr:', $SerializedString, 0, 4) === 0)
+            $Result = json_decode(substr($SerializedString, 4), TRUE);
+      }
+      return $Result;
    }
 }
 
@@ -119,5 +150,5 @@ if (!function_exists('CompareHashDigest')) {
     }
 }
 
-$Prefix = Gdn::Config('Garden.Database.Prefix');
+$Prefix = Gdn::Config('Database.DatabasePrefix');
 define('VANILLA_PREFIX', $Prefix);
