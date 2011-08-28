@@ -174,7 +174,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
       $UserID = $Sender->EventArguments['UserID'];
       
       $Capability = $this->GetWordPressCapability($UserID);
-            
+      
       // Check if user already exists in WP
       if ($SQL->Query("select * from wp_users where ID = '$UserID'")->FirstRow()) {
          // Update permission
@@ -216,22 +216,26 @@ class VanillaPressPlugin extends Gdn_Plugin {
          ->Column('Bridged', 'tinyint(1)', '0')
          ->Set();
       
-      // Delete all current WordPress users
-      $SQL->Query("truncate table wp_users");
-      $SQL->Query("truncate table wp_usermeta");
-      
-      // Port existing Garden users
-      $UserModel = new UserModel();
-      $Users = $UserModel->Get();
-      foreach ($Users->Results() as $User) {
-         InsertWordPressUser($User);
+      // Only do user modifications during first setup
+      if (!C('Plugins.WordPress.Setup', FALSE)) {
+         // Delete all current WordPress users
+         $SQL->Query("truncate table wp_users");
+         $SQL->Query("truncate table wp_usermeta");
+         
+         // Port existing Garden users
+         $UserModel = new UserModel();
+         $Users = $UserModel->Get();
+         foreach ($Users->Results() as $User) {
+            // @todo Optimize for multiple results
+            InsertWordPressUser($User);
+         }
+         
+         // Set Admin
+         $SQL->Query("update wp_usermeta 
+            set meta_value = '".mysql_real_escape_string(serialize(array('administrator' => 1)))."' 
+            where meta_key = 'wp_capabilities' 
+               and (user_id IN (select UserID from GDN_User where Admin = '1')");
       }
-      
-      // Set Admin
-      $SQL->Query("update wp_usermeta 
-         set meta_value = '".mysql_real_escape_string(serialize(array('administrator' => 1)))."' 
-         where meta_key = 'wp_capabilities' 
-            and (user_id IN (select UserID from GDN_User where Admin = '1')");
             
       // Disable blog registration
       $SQL->Query("update wp_options 
@@ -239,7 +243,10 @@ class VanillaPressPlugin extends Gdn_Plugin {
          where option_name = 'users_can_register'");
          
       // Set default category
-      SaveToConfig('Plugins.WordPress.Category', 1);
+      if (!C('Plugins.WordPress.Category', FALSE))
+         SaveToConfig('Plugins.WordPress.Category', 1);
+         
+      SaveToConfig('Plugins.WordPress.Setup', TRUE);
    }
 }
 
