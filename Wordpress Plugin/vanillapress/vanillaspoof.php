@@ -62,6 +62,8 @@ class Gdn_Format {
    }
 }
 
+// Copy/paste functions needed above.
+
 if (!function_exists('ArrayValue')) {
    /**
     * Returns the value associated with the $Needle key in the $Haystack
@@ -150,5 +152,6 @@ if (!function_exists('CompareHashDigest')) {
     }
 }
 
+// Define Vanilla's database prefix for plugin
 $Prefix = Gdn::Config('Database.DatabasePrefix');
 define('VANILLA_PREFIX', $Prefix);

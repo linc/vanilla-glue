@@ -27,15 +27,6 @@ $PluginInfo['VanillaPress'] = array(
  */
 class VanillaPressPlugin extends Gdn_Plugin {
 	/**
-	 * Add menu items to Dashboard.
-	 */
-   //public function Base_GetAppSettingsMenuItems_Handler(&$Sender) {
-      //$Menu = &$Sender->EventArguments['SideMenu'];
-      //$Menu->AddItem('Forum', T('WordPress'));
-      //$Menu->AddLink('Forum', T('WordPress'), 'settings/vanillapress', 'VanillaPress.Settings.Manage');
-   //}
-
-	/**
 	 * Add JS & CSS to the page.
 	 */
    public function AddJsCss($Sender) {
@@ -60,8 +51,6 @@ class VanillaPressPlugin extends Gdn_Plugin {
          $Comment->InsertName = $Comment->GuestName;
          $Comment->InsertEmail = $Comment->GuestEmail;
          $Comment->InsertUrl = $Comment->GuestUrl;
-         
-         // @todo Integrate with Gravatar plugin?
       }
    }
    

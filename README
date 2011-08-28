@@ -23,3 +23,8 @@ INSTRUCTIONS
 2. Copy the contents of the 'Vanilla Plugin' folder to Vanilla's plugins folder.
 3. Go to Vanilla's Dashboard and enable the VanillaPress plugin.
 4. Go to Wordpress' Dashboard and enable the VanillaPress plugin.
+
+Required WP template additions
+==============================
+1. Add to comments.php template: global $vanilla_comments; do_action('vanilla_comments', $post_id);
+2. Add to single.php template: global $vanilla_postinfo; do_action('vanilla_postinfo', $post_id);

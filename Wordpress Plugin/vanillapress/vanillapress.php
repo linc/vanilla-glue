@@ -8,18 +8,11 @@ Version: 1.0
 Author URI: http://lincolnwebs.com
 */
 
-/**
- * Required WP template additions:
- * Add to comments.php template: global $vanilla_comments; do_action('vanilla_comments', $post_id);
- * Add to single.php template: global $vanilla_postinfo; do_action('vanilla_postinfo', $post_id);
- */
-
 // Vanilla setup
 require_once(__DIR__.'/vanillaspoof.php'); // Requires 5.3 :(
 require_once(__DIR__.'/vanillacookieidentity.php');
 
 // Hooks
-#register_activation_hook(__FILE__, 'vanillapress_activate');
 add_action('init', 'vanillapress_authenticate');
 add_action('publish_post', 'vanillapress_add_discussion');
 add_action('comment_post', 'vanillapress_add_comment');
@@ -79,7 +72,7 @@ function vanillapress_add_discussion($postid) {
    // Update Post
    update_post_meta($postid, 'discussionid', $discussionid);
    
-   // Update counters
+   // Update Category discussion counter
    // @todo
 }
 
@@ -107,14 +100,14 @@ function vanillapress_add_comment($commentid) {
 	  'GuestEmail' => $comment->comment_author_email, 
 	  'GuestUrl' => $comment->comment_author_url
    )); // $comment->comment_approved;
-    
+   
    // Update discussion meta
    $wpdb->update(VANILLA_PREFIX.'Discussion', 
       array('DateLastComment' => $comment->comment_date, 'LastCommentUserID' => $comment->user_id), 
       array('ID' => $discussionid)
    );
 	
-	// Update counters
+	// Call CommentModel::Save2()
 	// @todo
 }
 
@@ -131,7 +124,8 @@ function vanillapress_get_comments($postid) {
 	$discussionid = get_post_meta($postid, 'discussionid', true);
    
 	// Get all comments from discussion
-   $vanilla_comments = $wpdb->get_results("SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo
+   $vanilla_comments = $wpdb->get_results("
+      SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo
       FROM ".VANILLA_PREFIX."Comment c
       LEFT JOIN ".VANILLA_PREFIX."User u ON u.UserID = c.InsertUserID
       WHERE DiscussionID = $discussionid 
