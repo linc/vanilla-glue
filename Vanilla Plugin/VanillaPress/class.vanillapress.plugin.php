@@ -49,15 +49,15 @@ class VanillaPressPlugin extends Gdn_Plugin {
     */
    public function Controller_SaveComment($Sender) {
       $CommentID = GetValue(1, $Sender->RequestArgs);
-      
-      // @todo Prevent abuse by checking if it's already been called (maybe db flag)
-      
+            
       // Update metadata on the comment & trigger activity
       $CommentModel = new CommentModel();
       $CommentData = $CommentModel->GetID($CommentID);
-      $CommentModel->UpdateCommentCount($CommentData->DiscussionID);
-      $CommentModel->Save2($CommentID, TRUE);
-      mail('destruction@gmail.com', 'vanilla', 'found comment '.$CommentID);
+      if (!$CommentData->Bridged) {
+         $CommentModel->UpdateCommentCount($CommentData->DiscussionID);
+         $CommentModel->Save2($CommentID, TRUE);
+         $CommentModel->SetProperty($CommentID, 'Bridged', 1);
+      }
    }
    
    /**
@@ -195,6 +195,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
          ->Column('GuestName', 'varchar(64)', TRUE)
          ->Column('GuestEmail', 'varchar(64)', TRUE)
          ->Column('GuestUrl', 'varchar(128)', TRUE)
+         ->Column('Bridged', 'tinyint(1)', '0')
          ->Set();
       
       // Delete all current WordPress users
