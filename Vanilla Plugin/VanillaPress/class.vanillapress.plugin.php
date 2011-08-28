@@ -173,7 +173,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
       $SQL = $Database->SQL();
       $UserID = $Sender->EventArguments['UserID'];
       
-      $Capability = GetWordPressCapability($UserID);
+      $Capability = $this->GetWordPressCapability($UserID);
             
       // Check if user already exists in WP
       if ($SQL->Query("select * from wp_users where ID = '$UserID'")->FirstRow()) {
@@ -245,7 +245,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
 
 if (!function_exists('UserAnchor')) {
    /**
-    * Override base UserAnchor to account for $UserUrl.
+    * Override UserAnchor to account for $UserUrl.
     */
    function UserAnchor($User, $CssClass = '', $Options = NULL) {
       static $NameUnique = NULL;
