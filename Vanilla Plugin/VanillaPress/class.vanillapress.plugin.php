@@ -51,9 +51,25 @@ class VanillaPressPlugin extends Gdn_Plugin {
    
    /**
 	 * Use guest data on comments if UserID is zero.
+	 *
+	 * Fields that need to be set for most themes: InsertName, InsertEmail, InsertPhoto.
+	 * We'll also set InsertUrl to replicate WordPress functionality of linking name.
 	 */
-   public function DiscussionController_Something2_Handler($Sender) {
-      
+   public function CommentModel_AfterGet_Handler($Sender) {
+      foreach ($Sender->EventArguments['Comments'] as &$Comment) {
+         $Comment->InsertName = $Comment->GuestName;
+         $Comment->InsertEmail = $Comment->GuestEmail;
+         $Comment->InsertUrl = $Comment->GuestUrl;
+         
+         // @todo Integrate with Gravatar plugin?
+      }
+   }
+   
+   /**
+    * Because UserBuiler has a whitelist of properties that doesn't include InsertUrl. :(
+    */
+   public function DiscussionController_BeforeCommentDisplay_Handler($Sender) {
+      $Sender->EventArguments['Author']->Url = $Sender->EventArguments['Object']->InsertUrl;
    }
    
    /**
@@ -210,5 +226,36 @@ class VanillaPressPlugin extends Gdn_Plugin {
          
       // Set default category
       SaveToConfig('Plugins.WordPress.Category', 1);
+   }
+}
+
+if (!function_exists('UserAnchor')) {
+   /**
+    * Override base UserAnchor to account for $UserUrl.
+    */
+   function UserAnchor($User, $CssClass = '', $Options = NULL) {
+      static $NameUnique = NULL;
+      if ($NameUnique === NULL)
+         $NameUnique = C('Garden.Registration.NameUnique');
+      
+      $Px = $Options;
+      $Name = GetValue($Px.'Name', $User, T('Unknown'));
+      $UserID = GetValue($Px.'UserID', $User, 0);
+   
+      if ($CssClass != '')
+         $CssClass = ' class="'.$CssClass.'"';
+      
+      // Use Guest's provided URL with nofollow attribute
+      $UserUrl = GetValue($Px.'Url', $User, FALSE);
+      if ($UserUrl) {
+         $Link = $UserUrl;
+         $NoFollow = ' rel="nofollow"';
+      }
+      else {
+         $Link = Url('/profile/'.($NameUnique ? '' : "$UserID/").rawurlencode($Name));
+         $NoFollow = '';
+      }
+         
+      return '<a href="'.htmlspecialchars($Link).'"'.$CssClass.$NoFollow.'>'.htmlspecialchars($Name).'</a>';
    }
 }
