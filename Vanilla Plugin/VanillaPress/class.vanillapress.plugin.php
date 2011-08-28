@@ -25,21 +25,7 @@ $PluginInfo['VanillaPress'] = array(
  * @todo Overwrite discussion URL with WordPress URL (DiscussionsController)
  * @todo Forward attempts to visit discussion to WordPress (DiscussionController)
  */
-class VanillaPressPlugin extends Gdn_Plugin {
-	/**
-	 * Add JS & CSS to the page.
-	 */
-   public function AddJsCss($Sender) {
-      $Sender->AddCSSFile('vanillapress.css', 'plugins/VanillaPress');
-		$Sender->AddJSFile('plugins/VanillaPress/vanillapress.js');
-   }
-	public function DiscussionsController_Render_Before($Sender) {
-		$this->AddJsCss($Sender);
-	}
-   public function CategoriesController_Render_Before($Sender) {
-      $this->AddJsCss($Sender);
-   }
-   
+class VanillaPressPlugin extends Gdn_Plugin {   
    /**
 	 * Use guest data on comments if UserID is zero.
 	 *
@@ -52,6 +38,26 @@ class VanillaPressPlugin extends Gdn_Plugin {
          $Comment->InsertEmail = $Comment->GuestEmail;
          $Comment->InsertUrl = $Comment->GuestUrl;
       }
+   }
+   
+   /**
+    * Do CommentModel::Save2() on new comments.
+    *
+    * WordPress can't call Vanilla's framework to do all the updates,
+    * activity, and mentions. It would cause tremendous duplication to do
+    * all that in the WP plugin, so we quietly cURL to this "sekrit" URL.
+    */
+   public function Controller_SaveComment($Sender) {
+      $CommentID = GetValue(1, $Sender->RequestArgs);
+      
+      // @todo Prevent abuse by checking if it's already been called (maybe db flag)
+      
+      // Update metadata on the comment & trigger activity
+      $CommentModel = new CommentModel();
+      $CommentData = $CommentModel->GetID($CommentID);
+      $CommentModel->UpdateCommentCount($CommentData->DiscussionID);
+      $CommentModel->Save2($CommentID, TRUE);
+      mail('destruction@gmail.com', 'vanilla', 'found comment '.$CommentID);
    }
    
    /**
@@ -101,10 +107,10 @@ class VanillaPressPlugin extends Gdn_Plugin {
    }
    
    /**
-	 * Update WordPress posts comment_count.
-	 */
-   public function PostController_Something_Handler($Sender) {
-      
+    * Create virtual controller.
+    */
+   public function PluginController_VanillaPress_Create($Sender) {
+      $this->Dispatch($Sender, $Sender->RequestArgs);
    }
    
    /**
@@ -126,7 +132,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
       $Sender->SetData('Title', T('WordPress Settings'));
       $Sender->Render('Settings', '', 'plugins/wordpress');
    }
-      
+   
    /**
 	 * Port user to WordPress if it doesn't exist yet.
 	 */

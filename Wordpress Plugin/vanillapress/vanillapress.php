@@ -71,9 +71,6 @@ function vanillapress_add_discussion($postid) {
 
    // Update Post
    update_post_meta($postid, 'discussionid', $discussionid);
-   
-   // Update Category discussion counter
-   // @todo
 }
 
 /**
@@ -101,14 +98,19 @@ function vanillapress_add_comment($commentid) {
 	  'GuestUrl' => $comment->comment_author_url
    )); // $comment->comment_approved;
    
+   $commentid = $wpdb->insert_id;
+   
    // Update discussion meta
    $wpdb->update(VANILLA_PREFIX.'Discussion', 
       array('DateLastComment' => $comment->comment_date, 'LastCommentUserID' => $comment->user_id), 
       array('ID' => $discussionid)
    );
-	
-	// Call CommentModel::Save2()
-	// @todo
+   	
+	// Call CommentModel::Save2() with cURL magic
+	$URL = get_bloginfo('home');
+	$c = curl_init($URL.'/plugin/vanillapress/savecomment/'.$commentid);
+	curl_exec($c);
+	curl_close($c);
 }
 
 /**
