@@ -68,15 +68,46 @@ class VanillaPressPlugin extends Gdn_Plugin {
    }
    
    /**
+	 * Get WordPress role name.
+	 */
+   public function GetWordPressCapability($UserID) {
+      // Get Vanilla permission to assign WP capabilities
+      $FakeSession = new Gdn_Session();
+      $FakeSession->Start($UserID);
+      switch (TRUE) {
+         case ($FakeSession->CheckPermission('WordPress.Blog.Administrator')) :
+            $Capability = array('administrator' => 1);
+            break;
+         case ($FakeSession->CheckPermission('WordPress.Blog.Editor')) :
+            $Capability = array('editor' => 1);
+            break;
+         case ($FakeSession->CheckPermission('WordPress.Blog.Author')) :
+            $Capability = array('author' => 1);
+            break;
+         case ($FakeSession->CheckPermission('WordPress.Blog.Contributor')) :
+            $Capability = array('contributor' => 1);
+            break;
+         default :
+            $Capability = array('subscriber' => 1);
+      }
+      unset($FakeSession);
+      return $Capability;
+   }
+   
+   /**
 	 * Use user data object to insert WordPress user records.
 	 *
 	 * @param object $User DataObject from Garden.
 	 * @param mixed $Capability Array or serialized array ex: array('author' => 1).
 	 */
-   public function InsertWordPressUser($User, $Capability = FALSE) {
+   public function InsertWordPressUser($UserID, $Capability = FALSE) {
       // Prep DB
       $Database = Gdn::Database();
       $SQL = $Database->SQL();
+      
+      // Get user
+      $UserModel = new UserModel();
+      $User = $UserModel->Get($UserID);
       
       // Get capability
       $Capability = ($Capability) ?: array('subscriber' => 1); // Default to subscriber
@@ -90,7 +121,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
    		user_pass = '".mysql_real_escape_string($User->Password)."',
    		user_nicename = '".mysql_real_escape_string(strtolower($User->Name))."',
    		user_email = '".mysql_real_escape_string($User->Email)."',
-   		user_registered = '".mysql_real_escape_string(date( 'Y-m-d H:i:s', $User->DateInserted))."',
+   		user_registered = '".mysql_real_escape_string($User->DateInserted)."',
    		display_name = '".mysql_real_escape_string($User->Name)."'");
    	   	
    	// Blog nickname
@@ -134,7 +165,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
    }
    
    /**
-	 * Port user to WordPress if it doesn't exist yet.
+	 * Port user to WordPress if it doesn't exist yet. Otherwise, update permission.
 	 */
    public function UserModel_AfterSave_Handler($Sender) {
       // Prep DB
@@ -142,26 +173,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
       $SQL = $Database->SQL();
       $UserID = $Sender->EventArguments['UserID'];
       
-      // Get Vanilla permission to assign WP capabilities
-      $FakeSession = new Gdn_Session();
-      $FakeSession->Start($UserID);
-      switch (TRUE) {
-         case ($FakeSession->CheckPermission('WordPress.Blog.Administrator')) :
-            $Capability = array('administrator' => 1);
-            break;
-         case ($FakeSession->CheckPermission('WordPress.Blog.Editor')) :
-            $Capability = array('editor' => 1);
-            break;
-         case ($FakeSession->CheckPermission('WordPress.Blog.Author')) :
-            $Capability = array('author' => 1);
-            break;
-         case ($FakeSession->CheckPermission('WordPress.Blog.Contributor')) :
-            $Capability = array('contributor' => 1);
-            break;
-         default :
-            $Capability = array('subscriber' => 1);
-      }
-      unset($FakeSession);
+      $Capability = GetWordPressCapability($UserID);
             
       // Check if user already exists in WP
       if ($SQL->Query("select * from wp_users where ID = '$UserID'")->FirstRow()) {
@@ -171,10 +183,16 @@ class VanillaPressPlugin extends Gdn_Plugin {
       		WHERE user_id = '$UserID'
                AND meta_key = 'wp_capabilities'");
       } else { 
-         // User not in WP - Get Vanilla user data
-         $User = $SQL->Select('*')->From('User')->Where('UserID', $UserID)->Get()->FirstRow();
-         InsertWordPressUser($User, $Capability);
+         // User not in WP
+         $this->InsertWordPressUser($UserID, $Capability);
       }
+   }
+   
+   /**
+	 * Port new user to WordPress.
+	 */
+   public function UserModel_AfterInsertUser_Handler() {
+      $this->InsertWordPressUser($Sender->EventArguments['InsertUserID']);
    }
 
 	/**
