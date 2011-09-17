@@ -221,14 +221,22 @@ class VanillaPressPlugin extends Gdn_Plugin {
          // Delete all current WordPress users
          $SQL->Query("truncate table wp_users");
          $SQL->Query("truncate table wp_usermeta");
+            
+         // Transfer existing Vanilla users 
+         $SQL->Query("INSERT INTO wp_users 
+            SET (ID, user_login, user_pass, user_nicename, user_email, user_reigstered, display_name) 
+            SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM GDN_User");
          
-         // Port existing Garden users
-         $UserModel = new UserModel();
-         $Users = $UserModel->Get();
-         foreach ($Users->Results() as $User) {
-            // @todo Optimize for multiple results
-            InsertWordPressUser($User);
-         }
+         // Nicknames
+   	   $SQL->Query("INSERT INTO wp_usermeta
+            SET (user_id, meta_key, meta_value)
+            SELECT UserID, 'nickname', Name FROM GDN_User");         
+         
+         // Starting permission (subscriber)
+         $Capability = mysql_real_escape_string(serialize(array('subscriber' => 1)));
+         $SQL->Query("INSERT INTO wp_usermeta 
+            SET (user_id, meta_key, meta_value)
+            SELECT UserID, 'wp_capabilities', '$Capability' FROM GDN_User");            
          
          // Set Admin
          $SQL->Query("update wp_usermeta 
