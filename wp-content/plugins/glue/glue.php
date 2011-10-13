@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: VanillaPress
+Plugin Name: Glue
 Plugin URI: 
-Description: Use Wordpress as an addon for Vanilla Forums.
+Description: Glues WordPress to your Vanilla Forum.
 Author: Matt Lincoln Russell
 Version: 1.0
 Author URI: http://lincolnwebs.com
@@ -13,16 +13,16 @@ require_once(__DIR__.'/vanillaspoof.php'); // Requires 5.3 :(
 require_once(__DIR__.'/vanillacookieidentity.php');
 
 // Hooks
-add_action('init', 'vanillapress_authenticate');
-add_action('publish_post', 'vanillapress_add_discussion');
-add_action('comment_post', 'vanillapress_add_comment');
-add_action('vanilla_comments', 'vanillapress_get_comments');
-add_action('vanilla_postinfo', 'vanillapress_get_postinfo');
+add_action('init', 'glue_authenticate');
+add_action('publish_post', 'glue_add_discussion');
+add_action('comment_post', 'glue_add_comment');
+add_action('vanilla_comments', 'glue_get_comments');
+add_action('vanilla_postinfo', 'glue_get_postinfo');
 
 /**
  * Authenticate users from Vanilla cookie.
  */
-function vanillapress_authenticate() {
+function glue_authenticate() {
    // Get & authenticate Vanilla cookie
    $auth_object = new Gdn_CookieIdentity();
    $userid = $auth_object->GetIdentity();
@@ -37,7 +37,7 @@ function vanillapress_authenticate() {
 /**
  * Create Vanilla discussion for each new WordPress post.
  */
-function vanillapress_add_discussion($postid) {
+function glue_add_discussion($postid) {
 	global $wpdb;
    
 	// Verify discussion has not been created
@@ -76,7 +76,7 @@ function vanillapress_add_discussion($postid) {
 /**
  * Copy new WordPress comment to Vanilla Comment.
  */
-function vanillapress_add_comment($commentid) {
+function glue_add_comment($commentid) {
 	global $wpdb;
    
 	// Get comment info
@@ -118,7 +118,7 @@ function vanillapress_add_comment($commentid) {
  *
  * @todo Add a limit or pagination
  */
-function vanillapress_get_comments($postid) {
+function glue_get_comments($postid) {
 	global $wpdb, $vanilla_comments, $discussionid;
 	$discussionid = 0;
 	
@@ -137,7 +137,7 @@ function vanillapress_get_comments($postid) {
 /**
  * Get extra post meta from Vanilla.
  */
-function vanillapress_get_postinfo($postid) {
+function glue_get_postinfo($postid) {
 	global $wpdb, $vanilla_postinfo;
 
 	// Get DiscussionID, author, replycount

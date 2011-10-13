@@ -1,9 +1,9 @@
 <?php if (!defined('APPLICATION')) exit();
 
 // Define the plugin:
-$PluginInfo['VanillaPress'] = array(
-   'Name' => 'VanillaPress',
-   'Description' => 'Use WordPress as an addon to Vanilla Forums. WARNING: DELETES ALL CURRENT WP USERS. INSTALL ONLY ON EMPTY BLOG.',
+$PluginInfo['Glue'] = array(
+   'Name' => 'Glue',
+   'Description' => 'Glues WordPress to your Vanilla Forum. WARNING: DELETES ALL CURRENT WP USERS. INSTALL ONLY ON EMPTY BLOG.',
    'Version' => '1.0a',
    'Author' => "Matt Lincoln Russell",
    'AuthorEmail' => 'lincolnwebs@gmail.com',
@@ -13,19 +13,19 @@ $PluginInfo['VanillaPress'] = array(
       'WordPress.Blog.Author',
       'WordPress.Blog.Editor',
       'WordPress.Blog.Administrator'),
-   'RequiredApplications' => array('Vanilla' => '2.0.17'),
-   'SettingsUrl' => '/dashboard/settings/wordpress'
+   'RequiredApplications' => array('Vanilla' => '2.0.18'),
+   'SettingsUrl' => '/dashboard/settings/glue'
 );
 
 /**
  * Plugin to use WordPress as a blog addon for Vanilla Forums.
  *
- * @package VanillaPress
+ * @package Glue
  * @todo Dashboard settings page
  * @todo Overwrite discussion URL with WordPress URL (DiscussionsController)
  * @todo Forward attempts to visit discussion to WordPress (DiscussionController)
  */
-class VanillaPressPlugin extends Gdn_Plugin {   
+class GluePlugin extends Gdn_Plugin {   
    /**
 	 * Use guest data on comments if UserID is zero.
 	 *
@@ -140,7 +140,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
    /**
     * Create virtual controller.
     */
-   public function PluginController_VanillaPress_Create($Sender) {
+   public function PluginController_Glue_Create($Sender) {
       $this->Dispatch($Sender, $Sender->RequestArgs);
    }
    
@@ -151,12 +151,12 @@ class VanillaPressPlugin extends Gdn_Plugin {
       $Sender->Permission('Garden.Settings.Manage');
       if ($Sender->Form->IsPostBack()) {
          $Settings = array(
-             'Plugins.WordPress.Category' => $Sender->Form->GetFormValue('CategoryID')
+             'Plugins.Glue.Category' => $Sender->Form->GetFormValue('CategoryID')
          );
          SaveToConfig($Settings);
          $Sender->InformMessage(T("Your settings have been saved."));
       } else {
-         $Sender->Form->SetFormValue('CategoryID', C('Plugins.WordPress.Category'));
+         $Sender->Form->SetFormValue('CategoryID', C('Plugins.Glue.Category'));
       }
       
       $Sender->AddSideMenu();
@@ -217,7 +217,7 @@ class VanillaPressPlugin extends Gdn_Plugin {
          ->Set();
       
       // Only do user modifications during first setup
-      if (!C('Plugins.WordPress.Setup', FALSE)) {
+      if (!C('Plugins.Glue.Setup', FALSE)) {
          // Delete all current WordPress users
          $SQL->Query("truncate table wp_users");
          $SQL->Query("truncate table wp_usermeta");
@@ -251,10 +251,10 @@ class VanillaPressPlugin extends Gdn_Plugin {
          where option_name = 'users_can_register'");
          
       // Set default category
-      if (!C('Plugins.WordPress.Category', FALSE))
-         SaveToConfig('Plugins.WordPress.Category', 1);
+      if (!C('Plugins.Glue.Category', FALSE))
+         SaveToConfig('Plugins.Glue.Category', 1);
          
-      SaveToConfig('Plugins.WordPress.Setup', TRUE);
+      SaveToConfig('Plugins.Glue.Setup', TRUE);
    }
 }
 
