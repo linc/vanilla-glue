@@ -73,7 +73,7 @@ class GluePlugin extends Gdn_Plugin {
    public function GetWordPressCapability($UserID) {
       // Get Vanilla permission to assign WP capabilities
       $FakeSession = new Gdn_Session();
-      $FakeSession->Start($UserID);
+      $FakeSession->Start($UserID, FALSE);
       switch (TRUE) {
          case ($FakeSession->CheckPermission('WordPress.Blog.Administrator')) :
             $Capability = array('administrator' => 1);
@@ -107,7 +107,7 @@ class GluePlugin extends Gdn_Plugin {
       
       // Get user
       $UserModel = new UserModel();
-      $User = $UserModel->Get($UserID);
+      $User = $UserModel->GetID($UserID);
       
       // Get capability
       $Capability = ($Capability) ?: array('subscriber' => 1); // Default to subscriber
@@ -176,7 +176,8 @@ class GluePlugin extends Gdn_Plugin {
       $Capability = $this->GetWordPressCapability($UserID);
       
       // Check if user already exists in WP
-      if ($SQL->Query("select * from wp_users where ID = '$UserID'")->FirstRow()) {
+      $User = $SQL->Query("select * from wp_users where ID = '$UserID'")->FirstRow();
+      if ($User->ID) {
          // Update permission
          $SQL->Query("UPDATE wp_usermeta 
             SET meta_value = '".mysql_real_escape_string(serialize($Capability))."'
@@ -191,7 +192,7 @@ class GluePlugin extends Gdn_Plugin {
    /**
 	 * Port new user to WordPress.
 	 */
-   public function UserModel_AfterInsertUser_Handler() {
+   public function UserModel_AfterInsertUser_Handler($Sender) {
       $this->InsertWordPressUser($Sender->EventArguments['InsertUserID']);
    }
 
