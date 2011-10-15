@@ -1,30 +1,32 @@
-This plugin is for people who want to add Wordpress to a Vanilla Forum community. 
+These plugins are for experienced web developers who want to add Wordpress to a Vanilla Forum community 
+with synched users, synched comments, and no iframes required.
 
 WARNING
 =======
-If you already have an existing Wordpress site and just installed a new Vanilla forum, this *IS NOT* the plugin for you. See the "VanillaForums" plugin for Wordpress instead.
+If you already have an existing Wordpress site and just installed a new Vanilla forum, this *IS NOT* the plugin for you. 
+See the "VanillaForums" plugin for Wordpress instead.
 
-VanillaPress will forcefully sync your Wordpress Users table to your Vanilla User table. This means existing Wordpress-only users WILL BE DELETED FOREVER.
+VanillaPress will forcefully sync your Wordpress Users table to your Vanilla User table. 
+This means existing Wordpress-only users WILL BE DELETED FOREVER. Even your Wordpress admin users will be deleted. 
+You will log in with your Vanilla admin account after install.
 
-This means even your Wordpress admin users will be deleted. You will log in with your Vanilla admin account after install.
-
-BACKUP YOUR DATABASE, CONFIG FILES, AND ANY CUSTOMIZATIONS BEFORE INSTALLING VANILLAPRESS.
+BACKUP YOUR DATABASE, CONFIG FILES, AND ANY CUSTOMIZATIONS BEFORE INSTALLING GLUE.
 
 REQUIREMENTS
 ============
+0. PHP 5.3 or higher
 1. Wordpress 3.0 and Vanilla 2.0.18
-2. Wordpress and Vanilla MUST be installed in the same database.
-3. Wordpress and Vanilla MUST be accessed from the same domain.
+2. WP and Vanilla MUST use the same database.
+3. WP and Vanilla MUST be on the same domain.
 
 INSTRUCTIONS
 ============
-0. Order matters.
-1. Copy the contents of the 'Wordpress Plugin' folder to Wordpress' wp-content/plugins folder.
-2. Copy the contents of the 'Vanilla Plugin' folder to Vanilla's plugins folder.
-3. Go to Vanilla's Dashboard and enable the VanillaPress plugin.
-4. Go to Wordpress' Dashboard and enable the VanillaPress plugin.
+0. Copy the Vanilla & WordPress plugins to their respective folders.
+1. Edit the wp-content/plugins/glue/config.php file to have the path to your Vanilla install.
+2. Go to the Wordpress Dashboard and enable the Glue plugin.
+3. Go to the Vanilla Dashboard and enable the Glue plugin.
 
-Required WP template additions
-==============================
+UPDATING YOUR THEME
+===================
 1. Add to comments.php template: global $vanilla_comments; do_action('vanilla_comments', $post_id);
 2. Add to single.php template: global $vanilla_postinfo; do_action('vanilla_postinfo', $post_id);
