@@ -2,16 +2,14 @@
 /**
  * Spoofing framework's existence for Gdn_CookieIdentity.
  */
-
-define('VANILLA_PATH', '/Users/destruction/Sites/vanilla.dev/'); // @todo Undo this hack
 define('APPLICATION', TRUE);
 
 class Gdn {
    // Spoof Gdn::Config()
    public function Config($Name, $DefaultValue = FALSE) {
       // Get $Configuration
-      require(VANILLA_PATH.'conf/config-defaults.php');
-      require(VANILLA_PATH.'conf/config.php');
+      require(VANILLA_PATH.'/conf/config-defaults.php');
+      require(VANILLA_PATH.'/conf/config.php');
       
       $Path = explode('.', $Name);
       

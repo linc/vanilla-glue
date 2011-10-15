@@ -17,6 +17,10 @@ $PluginInfo['Glue'] = array(
    'SettingsUrl' => '/dashboard/settings/glue'
 );
 
+// Establish overridable WP table prefix
+$Prefix = C('Plugins.Glue.WordPressPrefix', 'wp_');
+define('WP_PREFIX', $Prefix);
+
 /**
  * Plugin to use WordPress as a blog addon for Vanilla Forums.
  *
@@ -25,7 +29,7 @@ $PluginInfo['Glue'] = array(
  * @todo Overwrite discussion URL with WordPress URL (DiscussionsController)
  * @todo Forward attempts to visit discussion to WordPress (DiscussionController)
  */
-class GluePlugin extends Gdn_Plugin {   
+class GluePlugin extends Gdn_Plugin {
    /**
 	 * Use guest data on comments if UserID is zero.
 	 *
@@ -95,6 +99,23 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
+	 * Grab existing WordPress discussions/comments and import into Vanilla for continuity.
+	 */
+   public function ImportWordPressComments() {
+      $GardenPrefix = C('Garden.Database.DatabasePrefix', '');
+      
+      // Start discussions for existing WordPress posts
+      $SQL->Query("INSERT INTO ".WP_PREFIX."users 
+         (ID, user_login, user_pass, user_nicename, user_email, user_registered, display_name) 
+         SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM ".$GardenPrefix."User");
+         
+      // Port all comments from WordPress to new Vanilla discussions
+      $SQL->Query("INSERT INTO ".WP_PREFIX."users 
+         (ID, user_login, user_pass, user_nicename, user_email, user_registered, display_name) 
+         SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM ".$GardenPrefix."User");
+   }
+   
+   /**
 	 * Use user data object to insert WordPress user records.
 	 *
 	 * @param object $User DataObject from Garden.
@@ -115,7 +136,7 @@ class GluePlugin extends Gdn_Plugin {
          $Capability = serialize($Capability);
 
       // Blog user record
-	   $SQL->Query("INSERT INTO wp_users SET
+	   $SQL->Query("INSERT INTO ".WP_PREFIX."users SET
    		ID = '".$User->UserID."',
    		user_login = '".mysql_real_escape_string($User->Name)."',
    		user_pass = '".mysql_real_escape_string($User->Password)."',
@@ -125,13 +146,13 @@ class GluePlugin extends Gdn_Plugin {
    		display_name = '".mysql_real_escape_string($User->Name)."'");
    	   	
    	// Blog nickname
-   	$SQL->Query("INSERT INTO wp_usermeta SET
+   	$SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
    		user_id = '".$User->UserID."',
    		meta_key = 'nickname',
    		meta_value = '".mysql_real_escape_string($User->Name)."'");
    		
       // Blog permission
-      $SQL->Query("INSERT INTO wp_usermeta SET
+      $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
    		user_id = '".$User->UserID."',
    		meta_key = 'wp_capabilities',
 		   meta_value = '".mysql_real_escape_string($Capability)."'");
@@ -176,10 +197,10 @@ class GluePlugin extends Gdn_Plugin {
       $Capability = $this->GetWordPressCapability($UserID);
       
       // Check if user already exists in WP
-      $User = $SQL->Query("select * from wp_users where ID = '$UserID'")->FirstRow();
+      $User = $SQL->Query("select * from ".WP_PREFIX."users where ID = '$UserID'")->FirstRow();
       if ($User->ID) {
          // Update permission
-         $SQL->Query("UPDATE wp_usermeta 
+         $SQL->Query("UPDATE ".WP_PREFIX."usermeta 
             SET meta_value = '".mysql_real_escape_string(serialize($Capability))."'
       		WHERE user_id = '$UserID'
                AND meta_key = 'wp_capabilities'");
@@ -203,6 +224,7 @@ class GluePlugin extends Gdn_Plugin {
       $Structure = Gdn::Structure();
       $Database = Gdn::Database();
       $SQL = $Database->SQL();
+      $GardenPrefix = C('Garden.Database.DatabasePrefix', '');
       
       // Associate discussions with posts
       $Structure->Table('Discussion')
@@ -220,32 +242,35 @@ class GluePlugin extends Gdn_Plugin {
       // Only do user modifications during first setup
       if (!C('Plugins.Glue.Setup', FALSE)) {
          // Delete all current WordPress users
-         $SQL->Query("truncate table wp_users");
-         $SQL->Query("truncate table wp_usermeta");
+         $SQL->Query("truncate table ".WP_PREFIX."users");
+         $SQL->Query("truncate table ".WP_PREFIX."usermeta");
             
          // Transfer existing Vanilla users 
-         $SQL->Query("INSERT INTO wp_users 
+         $SQL->Query("INSERT INTO ".WP_PREFIX."users 
             (ID, user_login, user_pass, user_nicename, user_email, user_registered, display_name) 
-            SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM GDN_User");
+            SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM ".$GardenPrefix."User");
          
          // Nicknames
-   	   $SQL->Query("INSERT INTO wp_usermeta (user_id, meta_key, meta_value)
-            SELECT UserID, 'nickname', Name FROM GDN_User");         
+   	   $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
+            SELECT UserID, 'nickname', Name FROM ".$GardenPrefix."User");         
          
          // Starting permission (subscriber)
          $Capability = mysql_real_escape_string(serialize(array('subscriber' => 1)));
-         $SQL->Query("INSERT INTO wp_usermeta (user_id, meta_key, meta_value)
-            SELECT UserID, 'wp_capabilities', '$Capability' FROM GDN_User");            
+         $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
+            SELECT UserID, 'wp_capabilities', '$Capability' FROM ".$GardenPrefix."User");            
          
          // Set Admin
-         $SQL->Query("update wp_usermeta 
+         $SQL->Query("update ".WP_PREFIX."usermeta 
             set meta_value = '".mysql_real_escape_string(serialize(array('administrator' => 1)))."' 
             where meta_key = 'wp_capabilities' 
-               and (user_id IN (select UserID from GDN_User where Admin = '1'))");
+               and (user_id IN (select UserID from ".$GardenPrefix."User where Admin = '1'))");
+               
+         // Import existing comments
+         $this->ImportWordPressComments();
       }
             
       // Disable blog registration
-      $SQL->Query("update wp_options 
+      $SQL->Query("update ".WP_PREFIX."options 
          set option_value = '0' 
          where option_name = 'users_can_register'");
          

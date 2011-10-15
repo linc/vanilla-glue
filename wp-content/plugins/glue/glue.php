@@ -9,6 +9,7 @@ Author URI: http://lincolnwebs.com
 */
 
 // Vanilla setup
+require_once(__DIR__.'/config.php');
 require_once(__DIR__.'/vanillaspoof.php'); // Requires 5.3 :(
 require_once(__DIR__.'/vanillacookieidentity.php');
 
@@ -49,7 +50,7 @@ function glue_add_discussion($postid) {
 	$the_post = get_post($postid);
 	
 	// CategoryID
-	$categoryid = Gdn::Config('Plugins.WordPress.Category', 3);
+	$categoryid = Gdn::Config('Plugins.WordPress.Category', 0);
    
 	// UserID
 	$userid = intval($the_post->post_author);
