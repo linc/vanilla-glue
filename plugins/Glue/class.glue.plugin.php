@@ -224,25 +224,23 @@ class GluePlugin extends Gdn_Plugin {
             
          // Transfer existing Vanilla users 
          $SQL->Query("INSERT INTO wp_users 
-            SET (ID, user_login, user_pass, user_nicename, user_email, user_reigstered, display_name) 
+            (ID, user_login, user_pass, user_nicename, user_email, user_registered, display_name) 
             SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM GDN_User");
          
          // Nicknames
-   	   $SQL->Query("INSERT INTO wp_usermeta
-            SET (user_id, meta_key, meta_value)
+   	   $SQL->Query("INSERT INTO wp_usermeta (user_id, meta_key, meta_value)
             SELECT UserID, 'nickname', Name FROM GDN_User");         
          
          // Starting permission (subscriber)
          $Capability = mysql_real_escape_string(serialize(array('subscriber' => 1)));
-         $SQL->Query("INSERT INTO wp_usermeta 
-            SET (user_id, meta_key, meta_value)
+         $SQL->Query("INSERT INTO wp_usermeta (user_id, meta_key, meta_value)
             SELECT UserID, 'wp_capabilities', '$Capability' FROM GDN_User");            
          
          // Set Admin
          $SQL->Query("update wp_usermeta 
             set meta_value = '".mysql_real_escape_string(serialize(array('administrator' => 1)))."' 
             where meta_key = 'wp_capabilities' 
-               and (user_id IN (select UserID from GDN_User where Admin = '1')");
+               and (user_id IN (select UserID from GDN_User where Admin = '1'))");
       }
             
       // Disable blog registration

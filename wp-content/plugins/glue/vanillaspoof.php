@@ -2,8 +2,8 @@
 /**
  * Spoofing framework's existence for Gdn_CookieIdentity.
  */
- 
-define('VANILLA_PATH', '../../../'); // @todo Undo this hack
+
+define('VANILLA_PATH', '/Users/destruction/Sites/vanilla.dev/'); // @todo Undo this hack
 define('APPLICATION', TRUE);
 
 class Gdn {
