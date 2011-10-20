@@ -101,18 +101,21 @@ class GluePlugin extends Gdn_Plugin {
    /**
 	 * Grab existing WordPress discussions/comments and import into Vanilla for continuity.
 	 */
-   public function ImportWordPressComments() {
-      $GardenPrefix = C('Garden.Database.DatabasePrefix', '');
-      
+   public function ImportWordPressComments() {      
       // Start discussions for existing WordPress posts
-      $SQL->Query("INSERT INTO ".$GardenPrefix."Discussion 
-         () 
-         SELECT  FROM ".WP_PREFIX."post");
+      $SQL->Query("insert into :_Discussion 
+         (WordPressID, UserID, DateInserted, Name) 
+         select ID, post_author, post_date, post_title 
+         from ".WP_PREFIX."posts
+            where post_status = 'publish' and comment_count > 0");
          
       // Port all comments from WordPress to new Vanilla discussions
-      $SQL->Query("INSERT INTO ".$GardenPrefix."Comment 
-         () 
-         SELECT  FROM ".WP_PREFIX."comment");
+      $SQL->Query("insert into :_Comment
+         (DiscussionID, DateInserted, Body, UserID, GuestName, GuestUrl, GuestEmail, Glued) 
+         select comment_post_id, commet_date, comment_content, user_id, 
+            comment_author, comment_author_url, comment_author_email, '1' 
+         from ".WP_PREFIX."comments
+            where comment_approved = 1");
    }
    
    /**
@@ -200,10 +203,10 @@ class GluePlugin extends Gdn_Plugin {
       $User = $SQL->Query("select * from ".WP_PREFIX."users where ID = '$UserID'")->FirstRow();
       if ($User->ID) {
          // Update permission
-         $SQL->Query("UPDATE ".WP_PREFIX."usermeta 
-            SET meta_value = '".mysql_real_escape_string(serialize($Capability))."'
-      		WHERE user_id = '$UserID'
-               AND meta_key = 'wp_capabilities'");
+         $SQL->Query("update ".WP_PREFIX."usermeta 
+            set meta_value = '".mysql_real_escape_string(serialize($Capability))."'
+      		where user_id = '$UserID'
+               and meta_key = 'wp_capabilities'");
       } else { 
          // User not in WP
          $this->InsertWordPressUser($UserID, $Capability);
@@ -224,7 +227,6 @@ class GluePlugin extends Gdn_Plugin {
       $Structure = Gdn::Structure();
       $Database = Gdn::Database();
       $SQL = $Database->SQL();
-      $GardenPrefix = C('Garden.Database.DatabasePrefix', '');
       
       // Associate discussions with posts
       $Structure->Table('Discussion')
@@ -236,7 +238,7 @@ class GluePlugin extends Gdn_Plugin {
          ->Column('GuestName', 'varchar(64)', TRUE)
          ->Column('GuestEmail', 'varchar(64)', TRUE)
          ->Column('GuestUrl', 'varchar(128)', TRUE)
-         ->Column('Bridged', 'tinyint(1)', '0')
+         ->Column('Glued', 'tinyint(1)', '0')
          ->Set();
       
       // Only do user modifications during first setup
@@ -247,24 +249,24 @@ class GluePlugin extends Gdn_Plugin {
          $SQL->Query("truncate table ".WP_PREFIX."usermeta");
             
          // Transfer existing Vanilla users 
-         $SQL->Query("INSERT INTO ".WP_PREFIX."users 
+         $SQL->Query("insert into ".WP_PREFIX."users 
             (ID, user_login, user_pass, user_nicename, user_email, user_registered, display_name) 
-            SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM ".$GardenPrefix."User");
+            select UserID, Name, Password, LOWER(Name), Email, DateInserted, Name from :_User");
          
          // Nicknames
-   	   $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
-            SELECT UserID, 'nickname', Name FROM ".$GardenPrefix."User");         
+   	   $SQL->Query("insert into ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
+            select UserID, 'nickname', Name from :_User");         
          
          // Starting permission (subscriber)
          $Capability = mysql_real_escape_string(serialize(array('subscriber' => 1)));
-         $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
-            SELECT UserID, 'wp_capabilities', '$Capability' FROM ".$GardenPrefix."User");            
+         $SQL->Query("insert into ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
+            select UserID, 'wp_capabilities', '$Capability' from :_User");            
          
          // Set Admin
          $SQL->Query("update ".WP_PREFIX."usermeta 
             set meta_value = '".mysql_real_escape_string(serialize(array('administrator' => 1)))."' 
             where meta_key = 'wp_capabilities' 
-               and (user_id IN (select UserID from ".$GardenPrefix."User where Admin = '1'))");
+               and (user_id IN (select UserID from :_User where Admin = '1'))");
                
          // Import existing comments
          $this->ImportWordPressComments();
