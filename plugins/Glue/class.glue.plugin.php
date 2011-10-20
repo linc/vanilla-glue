@@ -68,7 +68,7 @@ class GluePlugin extends Gdn_Plugin {
     * Because UserBuiler has a whitelist of properties that doesn't include InsertUrl. :(
     */
    public function DiscussionController_BeforeCommentDisplay_Handler($Sender) {
-      $Sender->EventArguments['Author']->Url = $Sender->EventArguments['Object']->InsertUrl;
+      $Sender->EventArguments['Author']->Url = GetValue('InsertUrl', $Sender->EventArguments['Object'], '');
    }
    
    /**
@@ -105,14 +105,14 @@ class GluePlugin extends Gdn_Plugin {
       $GardenPrefix = C('Garden.Database.DatabasePrefix', '');
       
       // Start discussions for existing WordPress posts
-      $SQL->Query("INSERT INTO ".WP_PREFIX."users 
-         (ID, user_login, user_pass, user_nicename, user_email, user_registered, display_name) 
-         SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM ".$GardenPrefix."User");
+      $SQL->Query("INSERT INTO ".$GardenPrefix."Discussion 
+         () 
+         SELECT  FROM ".WP_PREFIX."post");
          
       // Port all comments from WordPress to new Vanilla discussions
-      $SQL->Query("INSERT INTO ".WP_PREFIX."users 
-         (ID, user_login, user_pass, user_nicename, user_email, user_registered, display_name) 
-         SELECT UserID, Name, Password, LOWER(Name), Email, DateInserted, Name FROM ".$GardenPrefix."User");
+      $SQL->Query("INSERT INTO ".$GardenPrefix."Comment 
+         () 
+         SELECT  FROM ".WP_PREFIX."comment");
    }
    
    /**
@@ -242,6 +242,7 @@ class GluePlugin extends Gdn_Plugin {
       // Only do user modifications during first setup
       if (!C('Plugins.Glue.Setup', FALSE)) {
          // Delete all current WordPress users
+         // @todo Match to Vanilla users by email instead
          $SQL->Query("truncate table ".WP_PREFIX."users");
          $SQL->Query("truncate table ".WP_PREFIX."usermeta");
             
