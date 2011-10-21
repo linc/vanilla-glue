@@ -72,7 +72,22 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
+    * If the discussion is based on a WordPress post, go to WordPress instead.
+    */
+   public function DiscussionController_BeforeDiscussionRender_Handler($Sender) {
+      $WordPressID = GetValue('WordPressID', $Sender->Discussion, FALSE);
+      if ($WordPressID) {
+         $Link = $this->GetWordPressLink($WordPressID);
+         Redirect($Link, 301);
+         exit();
+      }
+   }
+   
+   /**
 	 * Get WordPress role name.
+	 *
+	 * @param int $UserID Unique ID.
+	 * @return array WordPress-format capability array.
 	 */
    public function GetWordPressCapability($UserID) {
       // Get Vanilla permission to assign WP capabilities
@@ -96,6 +111,18 @@ class GluePlugin extends Gdn_Plugin {
       }
       unset($FakeSession);
       return $Capability;
+   }
+   
+   /**
+    * Get URL to a WordPress post by ID.
+    *
+    * @param int $PostID Unique ID.
+    * @return string $Link URL to the post.
+    */
+   public function GetWordPressLink($PostID) {
+      $Link = '?p='.$PostID; // @todo Cheating to test. Get pretty URL.
+      
+      return $Link;
    }
    
    /**
@@ -171,7 +198,7 @@ class GluePlugin extends Gdn_Plugin {
    /**
     * Setting page.
     */
-   public function SettingsController_WordPress_Create($Sender, $Args) {
+   public function SettingsController_WordPress_Create($Sender, $Args = array()) {
       $Sender->Permission('Garden.Settings.Manage');
       if ($Sender->Form->IsPostBack()) {
          $Settings = array(
