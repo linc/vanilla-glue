@@ -1,13 +1,13 @@
-These plugins are for experienced web developers who want to add Wordpress to a Vanilla Forum community 
-with synched users, synched comments, and no iframes required.
+These plugins are for experienced web developers who want to add WordPress to a Vanilla Forum community 
+with synched users, synched comments, no iframes, and the smoothest user experience.
 
 WARNING
 =======
-If you already have an existing Wordpress site and just installed a new Vanilla forum, this *IS NOT* the plugin for you. 
-See the "VanillaForums" plugin for Wordpress instead.
+If you already have an existing WordPress site and just installed a new Vanilla forum, this *IS NOT* the plugin for you. 
+See the "VanillaForums" plugin for WordPress instead.
 
-VanillaPress will forcefully sync your Wordpress Users table to your Vanilla User table. 
-This means existing Wordpress-only users WILL BE DELETED FOREVER. Even your Wordpress admin users will be deleted. 
+Glue will forcefully sync your WordPress Users table to your Vanilla User table. 
+This means existing WordPress-only users WILL BE DELETED FOREVER. Even your WordPress admin users will be deleted. 
 You will log in with your Vanilla admin account after install.
 
 BACKUP YOUR DATABASE, CONFIG FILES, AND ANY CUSTOMIZATIONS BEFORE INSTALLING GLUE.
@@ -23,10 +23,17 @@ INSTRUCTIONS
 ============
 0. Copy the Vanilla & WordPress plugins to their respective folders.
 1. Edit the wp-content/plugins/glue/config.php file to have the path to your Vanilla install.
-2. Go to the Wordpress Dashboard and enable the Glue plugin.
+2. Go to the WordPress Dashboard and enable the Glue plugin.
 3. Go to the Vanilla Dashboard and enable the Glue plugin.
 
 UPDATING YOUR THEME
 ===================
 1. Add to comments.php template: global $vanilla_comments; do_action('vanilla_comments', $post_id);
 2. Add to single.php template: global $vanilla_postinfo; do_action('vanilla_postinfo', $post_id);
+
+FEATURES
+========
+
+
+CHANGELOG
+=========

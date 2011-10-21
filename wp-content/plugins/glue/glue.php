@@ -8,6 +8,9 @@ Version: 1.0
 Author URI: http://lincolnwebs.com
 */
 
+// @todo Redirect from WordPress sign in page.
+// @todo Redirect to Vanilla log out.
+
 // Vanilla setup
 require_once(__DIR__.'/config.php');
 require_once(__DIR__.'/vanillaspoof.php'); // Requires 5.3 :(
@@ -22,6 +25,8 @@ add_action('vanilla_postinfo', 'glue_get_postinfo');
 
 /**
  * Authenticate users from Vanilla cookie.
+ *
+ * @todo Fix authentication lag - requires refresh after initial signin
  */
 function glue_authenticate() {
    // Get & authenticate Vanilla cookie

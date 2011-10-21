@@ -3,7 +3,7 @@
 // Define the plugin:
 $PluginInfo['Glue'] = array(
    'Name' => 'Glue',
-   'Description' => 'Glues WordPress to your Vanilla Forum. WARNING: DELETES ALL CURRENT WP USERS. INSTALL ONLY ON EMPTY BLOG.',
+   'Description' => 'Glues WordPress to your Vanilla Forum permanently. See warnings in README.',
    'Version' => '1.0a',
    'Author' => "Matt Lincoln Russell",
    'AuthorEmail' => 'lincolnwebs@gmail.com',
@@ -28,6 +28,7 @@ define('WP_PREFIX', $Prefix);
  * @todo Dashboard settings page
  * @todo Overwrite discussion URL with WordPress URL (DiscussionsController)
  * @todo Forward attempts to visit discussion to WordPress (DiscussionController)
+ * @todo Signout should also sign out of WordPress
  */
 class GluePlugin extends Gdn_Plugin {
    /**
@@ -139,8 +140,8 @@ class GluePlugin extends Gdn_Plugin {
       // Port all comments from WordPress to new Vanilla discussions
       $SQL->Query("insert into :_Comment
          (DiscussionID, DateInserted, Body, UserID, GuestName, GuestUrl, GuestEmail, Glued) 
-         select comment_post_id, commet_date, comment_content, user_id, 
-            comment_author, comment_author_url, comment_author_email, '1' 
+         select (select DiscussionID from :_Discussion where WordPressID = comment_post_id), 
+            commet_date, comment_content, user_id, comment_author, comment_author_url, comment_author_email, '1' 
          from ".WP_PREFIX."comments
             where comment_approved = 1");
    }
