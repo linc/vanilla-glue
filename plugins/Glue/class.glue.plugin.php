@@ -136,8 +136,8 @@ class GluePlugin extends Gdn_Plugin {
       
       // Start discussions for existing WordPress posts
       $SQL->Query("insert into ".$Database->DatabasePrefix."Discussion 
-         (WordPressID, InsertUserID, DateInserted, Name) 
-         select ID, post_author, post_date, post_title 
+         (WordPressID, InsertUserID, DateInserted, Name, Body, Format) 
+         select ID, post_author, post_date, post_title, CONCAT('<a href=\"/article/', post_name, '\">', post_title, '</a>'), 'HTML'
          from ".WP_PREFIX."posts
             where post_status = 'publish' and comment_count > 0");
          
