@@ -75,14 +75,14 @@ class GluePlugin extends Gdn_Plugin {
    /**
     * If the discussion is based on a WordPress post, go to WordPress instead.
     */
-   public function DiscussionController_BeforeDiscussionRender_Handler($Sender) {
+   /*public function DiscussionController_BeforeDiscussionRender_Handler($Sender) {
       $WordPressID = GetValue('WordPressID', $Sender->Discussion, FALSE);
       if ($WordPressID) {
          $Link = $this->GetWordPressLink($WordPressID);
          Redirect($Link, 301);
          exit();
       }
-   }
+   }*/
    
    /**
 	 * Get WordPress role name.
@@ -129,19 +129,23 @@ class GluePlugin extends Gdn_Plugin {
    /**
 	 * Grab existing WordPress discussions/comments and import into Vanilla for continuity.
 	 */
-   public function ImportWordPressComments() {      
+   public function ImportWordPressComments() { 
+      // Prep DB
+      $Database = Gdn::Database();
+      $SQL = $Database->SQL();
+      
       // Start discussions for existing WordPress posts
-      $SQL->Query("insert into :_Discussion 
-         (WordPressID, UserID, DateInserted, Name) 
+      $SQL->Query("insert into ".$Database->DatabasePrefix."Discussion 
+         (WordPressID, InsertUserID, DateInserted, Name) 
          select ID, post_author, post_date, post_title 
          from ".WP_PREFIX."posts
             where post_status = 'publish' and comment_count > 0");
          
       // Port all comments from WordPress to new Vanilla discussions
-      $SQL->Query("insert into :_Comment
-         (DiscussionID, DateInserted, Body, UserID, GuestName, GuestUrl, GuestEmail, Glued) 
-         select (select DiscussionID from :_Discussion where WordPressID = comment_post_id), 
-            commet_date, comment_content, user_id, comment_author, comment_author_url, comment_author_email, '1' 
+      $SQL->Query("insert into ".$Database->DatabasePrefix."Comment
+         (DiscussionID, DateInserted, Body, InsertUserID, GuestName, GuestUrl, GuestEmail, Glued) 
+         select (select DiscussionID from ".$Database->DatabasePrefix."Discussion where WordPressID = comment_post_id), 
+            comment_date, comment_content, user_id, comment_author, comment_author_url, comment_author_email, '1' 
          from ".WP_PREFIX."comments
             where comment_approved = 1");
    }
@@ -279,22 +283,22 @@ class GluePlugin extends Gdn_Plugin {
          // Transfer existing Vanilla users 
          $SQL->Query("insert into ".WP_PREFIX."users 
             (ID, user_login, user_pass, user_nicename, user_email, user_registered, display_name) 
-            select UserID, Name, Password, LOWER(Name), Email, DateInserted, Name from :_User");
+            select UserID, Name, Password, LOWER(Name), Email, DateInserted, Name from ".$Database->DatabasePrefix."User");
          
          // Nicknames
    	   $SQL->Query("insert into ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
-            select UserID, 'nickname', Name from :_User");         
+            select UserID, 'nickname', Name from ".$Database->DatabasePrefix."User");         
          
          // Starting permission (subscriber)
          $Capability = mysql_real_escape_string(serialize(array('subscriber' => 1)));
          $SQL->Query("insert into ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
-            select UserID, 'wp_capabilities', '$Capability' from :_User");            
+            select UserID, 'wp_capabilities', '$Capability' from ".$Database->DatabasePrefix."User");            
          
          // Set Admin
          $SQL->Query("update ".WP_PREFIX."usermeta 
             set meta_value = '".mysql_real_escape_string(serialize(array('administrator' => 1)))."' 
             where meta_key = 'wp_capabilities' 
-               and (user_id IN (select UserID from :_User where Admin = '1'))");
+               and (user_id IN (select UserID from ".$Database->DatabasePrefix."User where Admin = '1'))");
                
          // Import existing comments
          $this->ImportWordPressComments();
