@@ -133,7 +133,7 @@ function glue_get_comments($postid) {
    
 	// Get all comments from discussion
    $vanilla_comments = $wpdb->get_results("
-      SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo
+      SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo, c.GuestName, c.GuestEmail, c.GuestUrl
       FROM ".VANILLA_PREFIX."Comment c
       LEFT JOIN ".VANILLA_PREFIX."User u ON u.UserID = c.InsertUserID
       WHERE DiscussionID = $discussionid 
