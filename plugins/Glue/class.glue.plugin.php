@@ -32,11 +32,11 @@ define('WP_PREFIX', $Prefix);
  */
 class GluePlugin extends Gdn_Plugin {
    /**
-	 * Use guest data on comments if UserID is zero.
-	 *
-	 * Fields that need to be set for most themes: InsertName, InsertEmail, InsertPhoto.
-	 * We'll also set InsertUrl to replicate WordPress functionality of linking name.
-	 */
+    * Use guest data on comments if UserID is zero.
+    *
+    * Fields that need to be set for most themes: InsertName, InsertEmail, InsertPhoto.
+    * We'll also set InsertUrl to replicate WordPress functionality of linking name.
+    */
    public function CommentModel_AfterGet_Handler($Sender) {
       foreach ($Sender->EventArguments['Comments'] as &$Comment) {
          $Comment->InsertName = $Comment->GuestName;
@@ -58,6 +58,7 @@ class GluePlugin extends Gdn_Plugin {
       // Update metadata on the comment & trigger activity
       $CommentModel = new CommentModel();
       $CommentData = $CommentModel->GetID($CommentID);
+      $CommentData = self::HandleGuest($CommentData);
       if (!$CommentData->Glued) {
          $CommentModel->UpdateCommentCount($CommentData->DiscussionID);
          $CommentModel->Save2($CommentID, TRUE);
@@ -85,11 +86,11 @@ class GluePlugin extends Gdn_Plugin {
    }*/
    
    /**
-	 * Get WordPress role name.
-	 *
-	 * @param int $UserID Unique ID.
-	 * @return array WordPress-format capability array.
-	 */
+    * Get WordPress role name.
+    *
+    * @param int $UserID Unique ID.
+    * @return array WordPress-format capability array.
+    */
    public function GetWordPressCapability($UserID) {
       // Get Vanilla permission to assign WP capabilities
       $FakeSession = new Gdn_Session();
@@ -127,8 +128,20 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
-	 * Grab existing WordPress discussions/comments and import into Vanilla for continuity.
-	 */
+    * Convert guest fields into normal users fields.
+    */
+   public static function HandleGuest($CommentData) {
+      if ($CommentData->GuestName) {
+         $CommentData->Name = $CommentData->GuestName;
+         $CommentData->Email = $CommentData->GuestEmail;
+      }
+      
+      return $CommentData;
+   }
+   
+   /**
+    * Grab existing WordPress discussions/comments and import into Vanilla for continuity.
+    */
    public function ImportWordPressComments() { 
       // Prep DB
       $Database = Gdn::Database();
@@ -151,11 +164,11 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
-	 * Use user data object to insert WordPress user records.
-	 *
-	 * @param object $User DataObject from Garden.
-	 * @param mixed $Capability Array or serialized array ex: array('author' => 1).
-	 */
+    * Use user data object to insert WordPress user records.
+    *
+    * @param object $User DataObject from Garden.
+    * @param mixed $Capability Array or serialized array ex: array('author' => 1).
+    */
    public function InsertWordPressUser($UserID, $Capability = FALSE) {
       // Prep DB
       $Database = Gdn::Database();
@@ -171,26 +184,26 @@ class GluePlugin extends Gdn_Plugin {
          $Capability = serialize($Capability);
 
       // Blog user record
-	   $SQL->Query("INSERT INTO ".WP_PREFIX."users SET
-   		ID = '".$User->UserID."',
-   		user_login = '".mysql_real_escape_string($User->Name)."',
-   		user_pass = '".mysql_real_escape_string($User->Password)."',
-   		user_nicename = '".mysql_real_escape_string(strtolower($User->Name))."',
-   		user_email = '".mysql_real_escape_string($User->Email)."',
-   		user_registered = '".mysql_real_escape_string($User->DateInserted)."',
-   		display_name = '".mysql_real_escape_string($User->Name)."'");
-   	   	
-   	// Blog nickname
-   	$SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
-   		user_id = '".$User->UserID."',
-   		meta_key = 'nickname',
-   		meta_value = '".mysql_real_escape_string($User->Name)."'");
-   		
+      $SQL->Query("INSERT INTO ".WP_PREFIX."users SET
+         ID = '".$User->UserID."',
+         user_login = '".mysql_real_escape_string($User->Name)."',
+         user_pass = '".mysql_real_escape_string($User->Password)."',
+         user_nicename = '".mysql_real_escape_string(strtolower($User->Name))."',
+         user_email = '".mysql_real_escape_string($User->Email)."',
+         user_registered = '".mysql_real_escape_string($User->DateInserted)."',
+         display_name = '".mysql_real_escape_string($User->Name)."'");
+            
+      // Blog nickname
+      $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
+         user_id = '".$User->UserID."',
+         meta_key = 'nickname',
+         meta_value = '".mysql_real_escape_string($User->Name)."'");
+         
       // Blog permission
       $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
-   		user_id = '".$User->UserID."',
-   		meta_key = 'wp_capabilities',
-		   meta_value = '".mysql_real_escape_string($Capability)."'");
+         user_id = '".$User->UserID."',
+         meta_key = 'wp_capabilities',
+         meta_value = '".mysql_real_escape_string($Capability)."'");
    }
    
    /**
@@ -221,8 +234,8 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
-	 * Port user to WordPress if it doesn't exist yet. Otherwise, update permission.
-	 */
+    * Port user to WordPress if it doesn't exist yet. Otherwise, update permission.
+    */
    public function UserModel_AfterSave_Handler($Sender) {
       // Prep DB
       $Database = Gdn::Database();
@@ -237,7 +250,7 @@ class GluePlugin extends Gdn_Plugin {
          // Update permission
          $SQL->Query("update ".WP_PREFIX."usermeta 
             set meta_value = '".mysql_real_escape_string(serialize($Capability))."'
-      		where user_id = '$UserID'
+            where user_id = '$UserID'
                and meta_key = 'wp_capabilities'");
       } else { 
          // User not in WP
@@ -246,15 +259,15 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
-	 * Port new user to WordPress.
-	 */
+    * Port new user to WordPress.
+    */
    public function UserModel_AfterInsertUser_Handler($Sender) {
       $this->InsertWordPressUser($Sender->EventArguments['InsertUserID']);
    }
 
-	/**
-	 * 1-Time on install.
-	 */
+   /**
+    * 1-Time on install.
+    */
    public function Setup() {
       $Structure = Gdn::Structure();
       $Database = Gdn::Database();
@@ -286,7 +299,7 @@ class GluePlugin extends Gdn_Plugin {
             select UserID, Name, Password, LOWER(Name), Email, DateInserted, Name from ".$Database->DatabasePrefix."User");
          
          // Nicknames
-   	   $SQL->Query("insert into ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
+         $SQL->Query("insert into ".WP_PREFIX."usermeta (user_id, meta_key, meta_value)
             select UserID, 'nickname', Name from ".$Database->DatabasePrefix."User");         
          
          // Starting permission (subscriber)

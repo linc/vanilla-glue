@@ -46,12 +46,12 @@ class Gdn_Request {
 // Spoof Gdn_Format::Unserialize()
 class Gdn_Format {
    public static function Unserialize($SerializedString) {
-		$Result = $SerializedString;
-		
+      $Result = $SerializedString;
+      
       if(is_string($SerializedString)) {
-			if(substr_compare('a:', $SerializedString, 0, 2) === 0 || substr_compare('O:', $SerializedString, 0, 2) === 0)
-				$Result = unserialize($SerializedString);
-			elseif(substr_compare('obj:', $SerializedString, 0, 4) === 0)
+         if(substr_compare('a:', $SerializedString, 0, 2) === 0 || substr_compare('O:', $SerializedString, 0, 2) === 0)
+            $Result = unserialize($SerializedString);
+         elseif(substr_compare('obj:', $SerializedString, 0, 4) === 0)
             $Result = json_decode(substr($SerializedString, 4), FALSE);
          elseif(substr_compare('arr:', $SerializedString, 0, 4) === 0)
             $Result = json_decode(substr($SerializedString, 4), TRUE);
@@ -73,34 +73,34 @@ if (!function_exists('ArrayValue')) {
     */
    function ArrayValue($Needle, $Haystack, $Default = FALSE) {
       $Result = GetValue($Needle, $Haystack, $Default);
-		return $Result;
+      return $Result;
    }
 }
 
 if (!function_exists('GetValue')) {
-	/**
-	 * Return the value from an associative array or an object.
-	 *
-	 * @param string $Key The key or property name of the value.
-	 * @param mixed $Collection The array or object to search.
-	 * @param mixed $Default The value to return if the key does not exist.
+   /**
+    * Return the value from an associative array or an object.
+    *
+    * @param string $Key The key or property name of the value.
+    * @param mixed $Collection The array or object to search.
+    * @param mixed $Default The value to return if the key does not exist.
     * @param bool $Remove Whether or not to remove the item from the collection.
-	 * @return mixed The value from the array or object.
-	 */
-	function GetValue($Key, &$Collection, $Default = FALSE, $Remove = FALSE) {
-		$Result = $Default;
-		if(is_array($Collection) && array_key_exists($Key, $Collection)) {
-			$Result = $Collection[$Key];
+    * @return mixed The value from the array or object.
+    */
+   function GetValue($Key, &$Collection, $Default = FALSE, $Remove = FALSE) {
+      $Result = $Default;
+      if(is_array($Collection) && array_key_exists($Key, $Collection)) {
+         $Result = $Collection[$Key];
          if($Remove)
             unset($Collection[$Key]);
-		} elseif(is_object($Collection) && property_exists($Collection, $Key)) {
-			$Result = $Collection->$Key;
+      } elseif(is_object($Collection) && property_exists($Collection, $Key)) {
+         $Result = $Collection->$Key;
          if($Remove)
             unset($Collection->$Key);
       }
-			
+         
       return $Result;
-	}
+   }
 }
 
 if (!function_exists('StringEndsWith')) {
