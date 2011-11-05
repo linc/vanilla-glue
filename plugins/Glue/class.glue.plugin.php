@@ -58,10 +58,10 @@ class GluePlugin extends Gdn_Plugin {
       // Update metadata on the comment & trigger activity
       $CommentModel = new CommentModel();
       $CommentData = $CommentModel->GetID($CommentID);
-      if (!$CommentData->Bridged) {
+      if (!$CommentData->Glued) {
          $CommentModel->UpdateCommentCount($CommentData->DiscussionID);
          $CommentModel->Save2($CommentID, TRUE);
-         $CommentModel->SetProperty($CommentID, 'Bridged', 1);
+         $CommentModel->SetProperty($CommentID, 'Glued', 1);
       }
    }
    

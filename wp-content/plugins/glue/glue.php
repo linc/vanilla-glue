@@ -114,7 +114,7 @@ function glue_add_comment($commentid) {
    	
 	// Call CommentModel::Save2() with cURL magic
 	$URL = get_bloginfo('home');
-	$c = curl_init($URL.'/plugin/vanillapress/savecomment/'.$commentid);
+	$c = curl_init($URL.'/plugin/glue/savecomment/'.$commentid);
 	curl_exec($c);
 	curl_close($c);
 }
@@ -133,7 +133,7 @@ function glue_get_comments($postid) {
    
 	// Get all comments from discussion
    $vanilla_comments = $wpdb->get_results("
-      SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo, u.Email, c.GuestName, c.GuestEmail, c.GuestUrl
+      SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.UserID, u.Name, u.Photo, u.Email, c.GuestName, c.GuestEmail, c.GuestUrl
       FROM ".VANILLA_PREFIX."Comment c
       LEFT JOIN ".VANILLA_PREFIX."User u ON u.UserID = c.InsertUserID
       WHERE DiscussionID = $discussionid 
@@ -149,4 +149,34 @@ function glue_get_postinfo($postid) {
 	// Get DiscussionID, author, replycount
 	$vanilla_postinfo = $wpdb->get_row("SELECT p.post_author as user_id, p.vb_threadid as thread_id 
 		FROM $wpdb->posts p WHERE p.ID = '$postid'");
+}
+
+/**
+ * Get avatar/photo URL for a comment user.
+ */
+function glue_get_photo($comment) {
+   // Get photo URL
+   $PhotoUrl = $comment->Photo;
+   $Email = ($comment->Email) ? $comment->Email : $comment->GuestEmail;
+   if (!$PhotoUrl) {
+      // Use Gravatar + Vanillicon        
+      $PhotoUrl = 'http://www.gravatar.com/avatar.php?'
+         .'gravatar_id='.md5(strtolower($Email))
+         .'&amp;size=50'
+         .'&amp;default='.urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
+   }
+   
+   return $PhotoUrl;
+}
+
+/**
+ * Get avatar/photo URL for a comment user.
+ */
+function glue_get_url($comment) {
+   if ($comment->UserID)
+      $Url = '/profile/'.$comment->UserID.'/'.rawurlencode($comment->Name); 
+   else
+      $Url = $comment->GuestUrl;
+      
+   return $Url;
 }
