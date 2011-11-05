@@ -66,7 +66,7 @@ function glue_add_discussion($postid) {
 	$body = '<a href="'.$link.'">'.$the_post->post_title.'</a>';
    
 	// Create Discussion
-   $discussionid = $wpdb->insert(VANILLA_PREFIX.'Discussion', array(
+   $wpdb->insert(VANILLA_PREFIX.'Discussion', array(
       'CategoryID' => $categoryid, 
       'InsertUserID' => $userid, 
       'Name' => $title, 
@@ -76,7 +76,7 @@ function glue_add_discussion($postid) {
    );
 
    // Update Post
-   update_post_meta($postid, 'discussionid', $discussionid);
+   update_post_meta($postid, 'discussionid', $wpdb->insert_id);
 }
 
 /**
@@ -133,7 +133,7 @@ function glue_get_comments($postid) {
    
 	// Get all comments from discussion
    $vanilla_comments = $wpdb->get_results("
-      SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo, c.GuestName, c.GuestEmail, c.GuestUrl
+      SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.Name, u.Photo, u.Email, c.GuestName, c.GuestEmail, c.GuestUrl
       FROM ".VANILLA_PREFIX."Comment c
       LEFT JOIN ".VANILLA_PREFIX."User u ON u.UserID = c.InsertUserID
       WHERE DiscussionID = $discussionid 
