@@ -34,38 +34,38 @@ function glue_authenticate() {
    $userid = $auth_object->GetIdentity();
    
    // Set WordPress cookie
-	if ($userid > 0) {
-		wp_set_auth_cookie($userid, true);
-		setup_userdata($userid);
-	}
+   if ($userid > 0) {
+      wp_set_auth_cookie($userid, true);
+      setup_userdata($userid);
+   }
 }
 
 /**
  * Create Vanilla discussion for each new WordPress post.
  */
 function glue_add_discussion($postid) {
-	global $wpdb;
+   global $wpdb;
    
-	// Verify discussion has not been created
-	$discussionid = get_post_meta($postid, 'discussionid', true);
-	if ($discussionid > 0)
-	  return;
+   // Verify discussion has not been created
+   $discussionid = get_post_meta($postid, 'discussionid', true);
+   if ($discussionid > 0)
+     return;
    
-	// Get post info
-	$the_post = get_post($postid);
-	
-	// CategoryID
-	$categoryid = Gdn::Config('Plugins.WordPress.Category', 0);
+   // Get post info
+   $the_post = get_post($postid);
    
-	// UserID
-	$userid = intval($the_post->post_author);
+   // CategoryID
+   $categoryid = Gdn::Config('Plugins.WordPress.Category', 0);
    
-	// Data
-	$title = $the_post->post_title;
-	$link = str_replace('%postname%', $the_post->post_name, get_permalink($the_post->ID, true));
-	$body = '<a href="'.$link.'">'.$the_post->post_title.'</a>';
+   // UserID
+   $userid = intval($the_post->post_author);
    
-	// Create Discussion
+   // Data
+   $title = $the_post->post_title;
+   $link = str_replace('%postname%', $the_post->post_name, get_permalink($the_post->ID, true));
+   $body = '<a href="'.$link.'">'.$the_post->post_title.'</a>';
+   
+   // Create Discussion
    $wpdb->insert(VANILLA_PREFIX.'Discussion', array(
       'CategoryID' => $categoryid, 
       'InsertUserID' => $userid, 
@@ -83,25 +83,25 @@ function glue_add_discussion($postid) {
  * Copy new WordPress comment to Vanilla Comment.
  */
 function glue_add_comment($commentid) {
-	global $wpdb;
+   global $wpdb;
    
-	// Get comment info
-	$comment = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."comments WHERE comment_ID = '$commentid'");
+   // Get comment info
+   $comment = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."comments WHERE comment_ID = '$commentid'");
    
-	// Get DiscussionID
-	$discussionid = get_post_meta($comment->comment_post_ID, 'discussionid', true);
+   // Get DiscussionID
+   $discussionid = get_post_meta($comment->comment_post_ID, 'discussionid', true);
    
-	// Create Comment
-	$wpdb->insert(VANILLA_PREFIX.'Comment', array(
-	  'DiscussionID' => $discussionid, 
-	  'InsertUserID' => $comment->user_id, 
-	  'Body' => $comment->comment_content, 
-	  'Format' => 'Html', 
-	  'DateInserted' => $comment->comment_date, 
-	  'InsertIPAddress' => $comment->comment_author_IP, 
-	  'GuestName' => $comment->comment_author, 
-	  'GuestEmail' => $comment->comment_author_email, 
-	  'GuestUrl' => $comment->comment_author_url
+   // Create Comment
+   $wpdb->insert(VANILLA_PREFIX.'Comment', array(
+     'DiscussionID' => $discussionid, 
+     'InsertUserID' => $comment->user_id, 
+     'Body' => $comment->comment_content, 
+     'Format' => 'Html', 
+     'DateInserted' => $comment->comment_date, 
+     'InsertIPAddress' => $comment->comment_author_IP, 
+     'GuestName' => $comment->comment_author, 
+     'GuestEmail' => $comment->comment_author_email, 
+     'GuestUrl' => $comment->comment_author_url
    )); // $comment->comment_approved;
    
    $commentid = $wpdb->insert_id;
@@ -111,12 +111,12 @@ function glue_add_comment($commentid) {
       array('DateLastComment' => $comment->comment_date, 'LastCommentUserID' => $comment->user_id), 
       array('ID' => $discussionid)
    );
-   	
-	// Call CommentModel::Save2() with cURL magic
-	$URL = get_bloginfo('home');
-	$c = curl_init($URL.'/plugin/glue/savecomment/'.$commentid);
-	curl_exec($c);
-	curl_close($c);
+      
+   // Call CommentModel::Save2() with cURL magic
+   $URL = get_bloginfo('home');
+   $c = curl_init($URL.'/plugin/glue/savecomment/'.$commentid);
+   curl_exec($c);
+   curl_close($c);
 }
 
 /**
@@ -125,13 +125,13 @@ function glue_add_comment($commentid) {
  * @todo Add a limit or pagination
  */
 function glue_get_comments($postid) {
-	global $wpdb, $vanilla_comments, $discussionid;
-	$discussionid = 0;
-	
-	// Get DiscussionID
-	$discussionid = get_post_meta($postid, 'discussionid', true);
+   global $wpdb, $vanilla_comments, $discussionid;
+   $discussionid = 0;
    
-	// Get all comments from discussion
+   // Get DiscussionID
+   $discussionid = get_post_meta($postid, 'discussionid', true);
+   
+   // Get all comments from discussion
    $vanilla_comments = $wpdb->get_results("
       SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.UserID, u.Name, u.Photo, u.Email, c.GuestName, c.GuestEmail, c.GuestUrl
       FROM ".VANILLA_PREFIX."Comment c
@@ -144,11 +144,11 @@ function glue_get_comments($postid) {
  * Get extra post meta from Vanilla.
  */
 function glue_get_postinfo($postid) {
-	global $wpdb, $vanilla_postinfo;
+   global $wpdb, $vanilla_postinfo;
 
-	// Get DiscussionID, author, replycount
-	$vanilla_postinfo = $wpdb->get_row("SELECT p.post_author as user_id, p.vb_threadid as thread_id 
-		FROM $wpdb->posts p WHERE p.ID = '$postid'");
+   // Get DiscussionID, author, replycount
+   $vanilla_postinfo = $wpdb->get_row("SELECT p.post_author as user_id, p.vb_threadid as thread_id 
+      FROM $wpdb->posts p WHERE p.ID = '$postid'");
 }
 
 /**
