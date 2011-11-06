@@ -317,7 +317,7 @@ class GluePlugin extends Gdn_Plugin {
                and (user_id IN (select UserID from ".$Database->DatabasePrefix."User where Admin = '1'))");
                
          // Import existing comments
-         $this->ImportWordPressComments();
+         //$this->ImportWordPressComments();
       }
             
       // Disable blog registration
