@@ -243,7 +243,7 @@ class GluePlugin extends Gdn_Plugin {
       $Database = Gdn::Database();
       $SQL = $Database->SQL();
       $UserID = $Sender->EventArguments['UserID'];
-      
+      /*
       $Capability = $this->GetWordPressCapability($UserID);
       
       // Check if user already exists in WP
@@ -258,6 +258,7 @@ class GluePlugin extends Gdn_Plugin {
          // User not in WP
          $this->InsertWordPressUser($UserID, $Capability);
       }
+      */
    }
    
    /**
