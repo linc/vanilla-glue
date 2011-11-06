@@ -39,9 +39,11 @@ class GluePlugin extends Gdn_Plugin {
     */
    public function CommentModel_AfterGet_Handler($Sender) {
       foreach ($Sender->EventArguments['Comments'] as &$Comment) {
-         $Comment->InsertName = $Comment->GuestName;
-         $Comment->InsertEmail = $Comment->GuestEmail;
-         $Comment->InsertUrl = $Comment->GuestUrl;
+         if ($Comment->GuestName) {
+            $Comment->InsertName = $Comment->GuestName;
+            $Comment->InsertEmail = $Comment->GuestEmail;
+            $Comment->InsertUrl = $Comment->GuestUrl;
+         }
       }
    }
    
