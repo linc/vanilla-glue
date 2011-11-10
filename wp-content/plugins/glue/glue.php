@@ -156,9 +156,9 @@ function glue_get_postinfo($postid) {
  */
 function glue_get_photo($comment) {
    // Get photo URL
-   $PhotoUrl = $comment->Photo;
+   $PhotoUrl = '/uploads/'.ChangeBasename($comment->Photo, 'p%s'); // @todo Get PATH_UPLOADS / prefix
    $Email = ($comment->Email) ? $comment->Email : $comment->GuestEmail;
-   if (!$PhotoUrl) {
+   if (!$comment->Photo) {
       // Use Gravatar + Vanillicon        
       $PhotoUrl = 'http://www.gravatar.com/avatar.php?'
          .'gravatar_id='.md5(strtolower($Email))
@@ -179,4 +179,11 @@ function glue_get_url($comment) {
       $Url = $comment->GuestUrl;
       
    return $Url;
+}
+
+
+function ChangeBasename($Path, $NewBasename) {
+   $NewBasename = str_replace('%s', '$2', $NewBasename);
+   $Result = preg_replace('/^(.*\/)?(.*?)(\.[^.]+)$/', '$1'.$NewBasename.'$3', $Path);
+   return $Result;
 }
