@@ -72,7 +72,9 @@ function glue_add_discussion($postid) {
       'Name' => $title, 
       'Body' => $body, 
       'Format' => 'Html', 
-      'DateInserted' => date('Y-m-d H:i:s'))
+      'DateInserted' => date('Y-m-d H:i:s'),
+      'DateUpdated' => date('Y-m-d H:i:s'),
+      'DateLastComment' => date('Y-m-d H:i:s'))
    );
 
    // Update Post
@@ -97,7 +99,7 @@ function glue_add_comment($commentid) {
      'InsertUserID' => $comment->user_id, 
      'Body' => $comment->comment_content, 
      'Format' => 'Html', 
-     'DateInserted' => $comment->comment_date, 
+     'DateInserted' => date('Y-m-d H:i:s'), 
      'InsertIPAddress' => $comment->comment_author_IP, 
      'GuestName' => $comment->comment_author, 
      'GuestEmail' => $comment->comment_author_email, 
