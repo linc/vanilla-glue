@@ -22,7 +22,7 @@ REQUIREMENTS
 INSTRUCTIONS
 ============
 0. Copy the Vanilla & WordPress plugins to their respective folders.
-1. Edit the wp-content/plugins/glue/config.php file to have the path to your Vanilla install.
+1. Edit the wp-content/plugins/glue/config-sample.php file to have the path to your Vanilla install & rename to config.php.
 2. Go to the WordPress Dashboard and enable the Glue plugin.
 3. Go to the Vanilla Dashboard and enable the Glue plugin.
 
