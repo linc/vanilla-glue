@@ -90,6 +90,10 @@ function glue_add_comment($commentid) {
    // Get comment info
    $comment = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."comments WHERE comment_ID = '$commentid'");
    
+   // Ignore spam
+   if ($comment->comment_approved == 'spam')
+      return;
+   
    // Get DiscussionID
    $discussionid = get_post_meta($comment->comment_post_ID, 'discussionid', true);
    
