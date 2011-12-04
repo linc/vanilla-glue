@@ -32,7 +32,7 @@ function glue_authenticate() {
    // Get & authenticate Vanilla cookie
    $auth_object = new Gdn_CookieIdentity();
    $userid = $auth_object->GetIdentity();
-   
+
    // Set WordPress cookie
    if ($userid > 0) {
       wp_set_auth_cookie($userid, true);

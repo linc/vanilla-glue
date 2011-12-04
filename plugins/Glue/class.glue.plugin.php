@@ -69,10 +69,26 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
+    * Add 'Featured' tab.
+    */
+   public function DiscussionsController_AfterDiscussionTabs_Handler($Sender) {
+      ?>
+      <li<?php echo ($Sender->ControllerName == 'discussionscontroller' && $Sender->RequestMethod == 'featured') ? ' class="Active"' : ''; ?>><?php echo Anchor(T('Featured'), '/discussions/featured', 'Featured TabLink'); ?></li>
+      <?php
+   }
+   
+   /**
     * Because UserBuiler has a whitelist of properties that doesn't include InsertUrl. :(
     */
    public function DiscussionController_BeforeCommentDisplay_Handler($Sender) {
       $Sender->EventArguments['Author']->Url = GetValue('InsertUrl', $Sender->EventArguments['Object'], '');
+   }
+   
+   /**
+    * Create list of featured discussions.
+    */
+   public function DiscussionController_Featured_Create($Sender, $Args = array()) {
+      
    }
    
    /**

@@ -150,6 +150,22 @@ if (!function_exists('CompareHashDigest')) {
     }
 }
 
+if (!function_exists('CTo')) {
+   function CTo(&$Data, $Name, $Value) {
+      $Name = explode('.', $Name);
+      $LastKey = array_pop($Name);
+      $Current =& $Data;
+      
+      foreach ($Name as $Key) {
+         if (!isset($Current[$Key]))
+            $Current[$Key] = array();
+         
+         $Current =& $Current[$Key];
+      }
+      $Current[$LastKey] = $Value;
+   }
+}
+
 // Define Vanilla's database prefix for plugin
 $Prefix = Gdn::Config('Database.DatabasePrefix');
 define('VANILLA_PREFIX', $Prefix);
