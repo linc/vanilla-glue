@@ -304,7 +304,7 @@ class GluePlugin extends Gdn_Plugin {
          ->Column('GuestUrl', 'varchar(128)', TRUE)
          ->Column('Glued', 'tinyint(1)', '0')
          ->Set();
-      return;
+      
       // Only do user modifications during first setup
       if (!C('Plugins.Glue.Setup', FALSE)) {
          // Delete all current WordPress users
