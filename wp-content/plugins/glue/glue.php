@@ -147,24 +147,20 @@ function glue_get_comments($postid) {
 }
 
 /**
- * Get extra post meta from Vanilla.
- */
-function glue_get_postinfo($postid) {
-   global $wpdb, $vanilla_postinfo;
-
-   // Get DiscussionID, author, replycount
-   $vanilla_postinfo = $wpdb->get_row("SELECT p.post_author as user_id, p.vb_threadid as thread_id 
-      FROM $wpdb->posts p WHERE p.ID = '$postid'");
-}
-
-/**
  * Get avatar/photo URL for a comment user.
+ *
+ * @param mixed $data UserID (int) or object containing user data.
  */
-function glue_get_photo($comment) {
+function glue_get_photo($data) {
+   if (is_numeric($data)) {
+      global $wpdb;
+      $data = $wpdb->get_row("SELECT Name, Photo, Email, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
+   }
+
    // Get photo URL
-   $PhotoUrl = '/uploads/'.ChangeBasename($comment->Photo, 'p%s'); // @todo Get PATH_UPLOADS / prefix
-   $Email = ($comment->Email) ? $comment->Email : $comment->GuestEmail;
-   if (!$comment->Photo) {
+   $PhotoUrl = '/uploads/'.ChangeBasename($data->Photo, 'n%s'); // @todo Get PATH_UPLOADS / prefix
+   $Email = ($data->Email) ? $data->Email : $data->GuestEmail;
+   if (!$data->Photo) {
       // Use Gravatar + Vanillicon        
       $PhotoUrl = 'http://www.gravatar.com/avatar.php?'
          .'gravatar_id='.md5(strtolower($Email))
