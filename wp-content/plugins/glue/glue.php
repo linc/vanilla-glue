@@ -52,9 +52,11 @@ function glue_add_discussion($postid) {
    
    // Get post info
    $the_post = get_post($postid);
+   list($category) = get_the_category($postid);
    
    // CategoryID
-   $categoryid = Gdn::Config('Plugins.WordPress.Category', 0);
+   $default_cat = Gdn::Config('Glue.Category.Default', 1);
+   $categoryid = Gdn::Config('Glue.Category.'.$category->name, $default_cat);
    
    // UserID
    $userid = intval($the_post->post_author);
@@ -138,7 +140,8 @@ function glue_get_comments($postid) {
    
    // Get all comments from discussion
    $vanilla_comments = $wpdb->get_results("
-      SELECT CommentID, c.InsertUserID, Body, c.DateInserted, c.InsertIPAddress, u.UserID, u.Name, u.Photo, u.Email, c.GuestName, c.GuestEmail, c.GuestUrl
+      SELECT c.CommentID, c.InsertUserID, c.Body, c.DateInserted, c.InsertIPAddress, u.UserID, u.Name, u.Photo, u.Email, 
+         c.GuestName, c.GuestEmail, c.GuestUrl, c.Format
       FROM ".VANILLA_PREFIX."Comment c
       LEFT JOIN ".VANILLA_PREFIX."User u ON u.UserID = c.InsertUserID
       WHERE DiscussionID = $discussionid 

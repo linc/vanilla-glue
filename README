@@ -14,10 +14,9 @@ BACKUP YOUR DATABASE, CONFIG FILES, AND ANY CUSTOMIZATIONS BEFORE INSTALLING GLU
 
 REQUIREMENTS
 ============
-0. PHP 5.3 or higher
-1. Wordpress 3.0 and Vanilla 2.0.18
-2. WP and Vanilla MUST use the same database.
-3. WP and Vanilla MUST be on the same domain.
+0. Wordpress 3.0 and Vanilla 2.0.18
+1. WP and Vanilla MUST use the same database.
+2. WP and Vanilla MUST be on the same domain.
 
 INSTRUCTIONS
 ============
@@ -25,6 +24,7 @@ INSTRUCTIONS
 1. Edit the wp-content/plugins/glue/config-sample.php file to have the path to your Vanilla install & rename to config.php.
 2. Go to the WordPress Dashboard and enable the Glue plugin.
 3. Go to the Vanilla Dashboard and enable the Glue plugin.
+4. Set $Configuration['Plugins']['Glue']['Category'][$WordPressCategoryName] = $VanillaCategoryID in Vanilla config for each WP category.
 
 UPDATING YOUR THEME
 ===================
