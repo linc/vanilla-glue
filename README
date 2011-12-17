@@ -1,5 +1,11 @@
-These plugins are for experienced web developers who want to add WordPress to a Vanilla Forum community 
-with synched users, synched comments, no iframes, and the smoothest user experience.
+SUMMARY
+=======
+These plugins are for experienced web developers who want to add WordPress to a Vanilla Forum community with synched users, synched comments, no iframes, and the smoothest user experience.
+
+LICENSE
+=======
+@license GNU GPL2 (see license.txt)
+@copyright 2011 Matt Lincoln Russell <lincolnwebs@gmail.com>
 
 WARNING
 =======
