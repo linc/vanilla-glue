@@ -11,10 +11,9 @@ Author URI: http://lincolnwebs.com
 // @todo Redirect from WordPress sign in page.
 // @todo Redirect to Vanilla log out.
 
-// Vanilla setup
-require_once(__DIR__.'/config.php');
-require_once(__DIR__.'/vanillaspoof.php'); // Requires 5.3 :(
-require_once(__DIR__.'/vanillacookieidentity.php');
+// Include Garden framework
+require_once(dirname(__FILE__).'/config.php');
+require_once(dirname(__FILE__).'/vanilla.php');
 
 // Hooks
 add_action('init', 'glue_authenticate');
@@ -133,7 +132,7 @@ function glue_add_comment($commentid) {
 function glue_get_comments($postid) {
    global $wpdb, $vanilla_comments, $discussionid;
    $discussionid = 0;
-   
+      
    // Get DiscussionID
    $discussionid = get_post_meta($postid, 'discussionid', true);
    
