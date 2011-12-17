@@ -71,11 +71,14 @@ class GluePlugin extends Gdn_Plugin {
    /**
     * Add 'Featured' tab.
     */
-   public function DiscussionsController_AfterDiscussionTabs_Handler($Sender) {
-      ?>
-      <li<?php echo ($Sender->ControllerName == 'discussionscontroller' && $Sender->RequestMethod == 'featured') ? ' class="Active"' : ''; ?>><?php echo Anchor(T('Featured'), '/discussions/featured', 'Featured TabLink'); ?></li>
-      <?php
-   }
+   /*public function DiscussionsController_AfterDiscussionTabs_Handler($Sender) {
+      // Set options
+      $Options = array();
+      if  ($Sender->ControllerName == 'discussionscontroller' && $Sender->RequestMethod == 'featured')
+         $Options = array('class' => 'Active');
+      
+      echo Wrap(Anchor(T('Featured'), '/discussions/featured', 'Featured TabLink'), 'li', $Options);
+   }*/
    
    /**
     * Because UserBuiler has a whitelist of properties that doesn't include InsertUrl. :(
