@@ -11,9 +11,17 @@ Author URI: http://lincolnwebs.com
 // @todo Redirect from WordPress sign in page.
 // @todo Redirect to Vanilla log out.
 
+// Pass GET params around Vanilla
+if (isset($_GET)) 
+   $GetHolder = $_GET;
+
 // Include Garden framework
 require_once(dirname(__FILE__).'/config.php');
 require_once(dirname(__FILE__).'/vanilla.php');
+
+// Pass GET params around Vanilla
+if (isset($GetHolder)) 
+   $_GET = $GetHolder;
 
 // Hooks
 add_action('init', 'glue_authenticate');
