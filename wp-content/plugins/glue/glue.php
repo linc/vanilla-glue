@@ -8,8 +8,13 @@ Version: 1.0
 Author URI: http://lincolnwebs.com
 */
 
-// @todo Redirect from WordPress sign in page.
-// @todo Redirect to Vanilla log out.
+/**
+ * WordPress Glue plugin.
+ *
+ * @package Glue
+ * @copyright 2011 Matt Lincoln Russell <lincolnwebs@gmail.com>
+ * @todo Redirect to Vanilla log out.
+ */
 
 // Pass GET params around Vanilla
 if (isset($_GET)) 
@@ -20,8 +25,10 @@ require_once(dirname(__FILE__).'/config.php');
 require_once(dirname(__FILE__).'/vanilla.php');
 
 // Pass GET params around Vanilla
-if (isset($GetHolder)) 
+if (isset($GetHolder)) {
    $_GET = $GetHolder;
+   unset($GetHolder);
+}
 
 // Hooks
 add_action('init', 'glue_authenticate');
@@ -49,6 +56,8 @@ function glue_authenticate() {
 
 /**
  * Create Vanilla discussion for each new WordPress post.
+ *
+ * @param int $postid
  */
 function glue_add_discussion($postid) {
    global $wpdb;
@@ -92,6 +101,8 @@ function glue_add_discussion($postid) {
 
 /**
  * Copy new WordPress comment to Vanilla Comment.
+ *
+ * @param int $commentid
  */
 function glue_add_comment($commentid) {
    global $wpdb;
@@ -112,12 +123,12 @@ function glue_add_comment($commentid) {
      'InsertUserID' => $comment->user_id, 
      'Body' => $comment->comment_content, 
      'Format' => 'Html', 
-     'DateInserted' => date('Y-m-d H:i:s'), 
+     'DateInserted' => $comment->comment_date, 
      'InsertIPAddress' => $comment->comment_author_IP, 
      'GuestName' => $comment->comment_author, 
      'GuestEmail' => $comment->comment_author_email, 
      'GuestUrl' => $comment->comment_author_url
-   )); // $comment->comment_approved;
+   ));
    
    $commentid = $wpdb->insert_id;
    
@@ -138,6 +149,7 @@ function glue_add_comment($commentid) {
  * Get comments to display in WordPress.
  *
  * @todo Add a limit or pagination
+ * @param int $postid
  */
 function glue_get_comments($postid) {
    global $wpdb, $vanilla_comments, $discussionid;
@@ -160,6 +172,7 @@ function glue_get_comments($postid) {
  * Get avatar/photo URL for a comment user.
  *
  * @param mixed $data UserID (int) or object containing user data.
+ * @return string Url of photo.
  */
 function glue_get_photo($data) {
    if (is_numeric($data)) {
@@ -183,6 +196,9 @@ function glue_get_photo($data) {
 
 /**
  * Get avatar/photo URL for a comment user.
+ *
+ * @param object $comment
+ * @return string Url path to user profile.
  */
 function glue_get_url($comment) {
    if ($comment->UserID)
@@ -191,11 +207,4 @@ function glue_get_url($comment) {
       $Url = $comment->GuestUrl;
       
    return $Url;
-}
-
-
-function ChangeBasename($Path, $NewBasename) {
-   $NewBasename = str_replace('%s', '$2', $NewBasename);
-   $Result = preg_replace('/^(.*\/)?(.*?)(\.[^.]+)$/', '$1'.$NewBasename.'$3', $Path);
-   return $Result;
 }
