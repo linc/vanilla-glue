@@ -200,7 +200,7 @@ class GluePlugin extends Gdn_Plugin {
       $User = $UserModel->GetID($UserID);
       
       // Get capability
-      $Capability = ($Capability) ?: array('subscriber' => 1); // Default to subscriber
+      $Capability = ($Capability) ? $Capability : array('subscriber' => 1); // Default to subscriber
       if (is_array($Capability))
          $Capability = serialize($Capability);
 
