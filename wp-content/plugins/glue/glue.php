@@ -90,9 +90,9 @@ function glue_add_discussion($postid) {
       'Name' => $title, 
       'Body' => $body, 
       'Format' => 'Html', 
-      'DateInserted' => date('Y-m-d H:i:s'),
-      'DateUpdated' => date('Y-m-d H:i:s'),
-      'DateLastComment' => date('Y-m-d H:i:s'))
+      'DateInserted' => $the_post->post_date,
+      'DateUpdated' => $the_post->post_date,
+      'DateLastComment' => $the_post->post_date )
    );
 
    // Update Post
