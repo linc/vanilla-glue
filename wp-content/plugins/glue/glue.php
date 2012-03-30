@@ -140,8 +140,16 @@ function glue_add_comment($commentid) {
 function glue_get_comments($postid) {
    global $vanilla_comments, $discussionid;
    $discussionid = get_post_meta($postid, 'discussionid', true);
+   
+   // Get comments
    $CommentModel = new CommentModel();
-   $vanilla_comments = $CommentModel->Get($discussionid, 100)->Result(DATASET_TYPE_ARRAY);
+   $CommentData = $CommentModel->Get($discussionid, 100);
+   $vanilla_comments = $CommentData->Result(DATASET_TYPE_ARRAY);
+   
+   // Set user discussion data
+   $DiscussionModel = new DiscussionModel();
+   $Discussion = $DiscussionModel->GetID($discussionid);
+   $CommentModel->SetWatch($Discussion, $CommentData->NumRows(), 0, $Discussion->CountComments);
 }
 
 /**
