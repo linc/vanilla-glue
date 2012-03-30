@@ -36,6 +36,7 @@ add_action('comment_post', 'glue_add_comment');
 add_action('vanilla_comments', 'glue_get_comments');
 add_action('vanilla_postinfo', 'glue_get_postinfo');
 add_action('wp_logout', 'glue_logout');
+add_action('admin_menu', 'glue_block_profile');
 
 /**
  * Authenticate users from Vanilla cookie.
@@ -185,4 +186,14 @@ function glue_get_url($comment) {
  */
 function glue_logout() {
    Gdn::Session()->End();
+}
+
+/**
+ * Use Vanilla profile, not WordPress.
+ */
+function glue_block_profile() {
+   $result = stripos($_SERVER['REQUEST_URI'], 'profile.php');
+   if ($result !== FALSE) {
+      wp_redirect(get_option('siteurl') . '/profile');
+   }
 }
