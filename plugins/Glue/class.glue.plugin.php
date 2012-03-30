@@ -88,6 +88,35 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
+    * Get Guest user data for discussions view.
+    */
+   public function DiscussionsController_BeforeDiscussionName_Handler($Sender, $Args) {
+      //$this->LastGuestUser($Args);
+   }
+   
+   /**
+    * Get Guest user data for categories view.
+    */
+   public function CategoriesController_BeforeDiscussionName_Handler($Sender, $Args) {
+      $this->LastGuestUser($Args);
+   }
+   
+   /**
+    * Derive guest user data.
+    */
+   public function LastGuestUser(&$Args) {
+      if (!GetValue('Name', $Args['LastUser']) && Gdn::Session()->UserID == 5) {
+         $CommentID = GetValue('LastCommentID', $Args['Discussion']);
+         if ($CommentID) {
+            $CommentModel = new CommentModel();
+            $CommentData = $CommentModel->GetID($CommentID);
+            $Args['LastUser'] = UserBuilder($CommentData, 'Guest');
+            SetValue('Url', $Args['LastUser'], GetValue('GuestUrl', $CommentData, '#'));
+         }
+      }
+   }
+   
+   /**
     * Create list of featured discussions.
     */
    public function DiscussionController_Featured_Create($Sender, $Args = array()) {
