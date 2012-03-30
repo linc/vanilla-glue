@@ -86,7 +86,7 @@ function glue_add_discussion($postid) {
       'Format' => 'Html', 
       'DateInserted' => $the_post->post_date,
       'DateUpdated' => $the_post->post_date,
-      'DateLastComment' => $the_post->post_date )
+      'DateLastComment' => $the_post->post_date
    );
    
    // Create discussion
@@ -123,7 +123,7 @@ function glue_add_comment($commentid) {
      'GuestName' => $comment->comment_author, 
      'GuestEmail' => $comment->comment_author_email, 
      'GuestUrl' => $comment->comment_author_url
-   ));
+   );
    
    $CommentID = $CommentModel->Save($CommentData);
    if ($CommentID) 
@@ -152,14 +152,16 @@ function glue_get_comments($postid) {
 function glue_get_photo($data) {
    if (is_numeric($data)) {
       global $wpdb;
-      $data = $wpdb->get_row("SELECT Name, Photo, Email, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
+      $data = $wpdb->get_row("SELECT Name as InsertName, Photo as InsertPhoto, Email as InsertEmail, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
    }
-
+   
    // Get photo URL
-   $PhotoUrl = '/uploads/'.ChangeBasename($data->Photo, 'n%s'); // @todo Get PATH_UPLOADS / prefix
-   if (!$data->Photo) {
+   $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
+   if ($PhotoUrl && !strstr($PhotoUrl, 'http://'))
+      $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
+   if (!GetValue('InsertPhoto', $data)) {
       // Use Gravatar + Vanillicon
-      $Email = ($data->Email) ? $data->Email : $data->GuestEmail;
+      $Email = GetValue('InsertEmail', $data, GetValue('GuestEmail', $data));
       $PhotoUrl = 'http://www.gravatar.com/avatar.php?gravatar_id='.md5(strtolower($Email)).'&amp;size=50&amp;default='.
          urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
    }
@@ -174,7 +176,8 @@ function glue_get_photo($data) {
  * @return string Url path to user profile.
  */
 function glue_get_url($comment) {
-   return ($comment->UserID) ? '/profile/'.$comment->UserID.'/'.rawurlencode($comment->Name) : $comment->GuestUrl; 
+   $UserID = GetValue('UserID', $comment);
+   return ($UserID) ? '/profile/'.$UserID.'/'.rawurlencode(GetValue('InsertName', $comment)) : GetValue('GuestUrl', $comment); 
 }
 
 /**

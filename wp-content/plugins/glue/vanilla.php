@@ -24,3 +24,5 @@ require_once(PATH_ROOT.'/bootstrap.php');
 // Define Vanilla's database prefix for easy access
 $Prefix = Gdn::Config('Database.DatabasePrefix');
 define('VANILLA_PREFIX', $Prefix);
+
+Gdn::Request()->WebRoot('');
