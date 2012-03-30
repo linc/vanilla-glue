@@ -51,27 +51,6 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
-    * Do CommentModel::Save2() on new comments.
-    *
-    * WordPress can't call Vanilla's framework to do all the updates,
-    * activity, and mentions. It would cause tremendous duplication to do
-    * all that in the WP plugin, so we quietly cURL to this "sekrit" URL.
-    */
-   public function Controller_SaveComment($Sender, $Args) {
-      $CommentID = GetValue(1, $Args);
-            
-      // Update metadata on the comment & trigger activity
-      $CommentModel = new CommentModel();
-      $CommentData = $CommentModel->GetID($CommentID);
-      $CommentData = self::HandleGuest($CommentData);
-      if (!$CommentData->Glued) {
-         $CommentModel->UpdateCommentCount($CommentData->DiscussionID);
-         $CommentModel->Save2($CommentID, TRUE);
-         $CommentModel->SetProperty($CommentID, 'Glued', 1);
-      }
-   }
-   
-   /**
     * Add 'Featured' tab.
     */
    /*public function DiscussionsController_AfterDiscussionTabs_Handler($Sender) {
@@ -270,13 +249,6 @@ class GluePlugin extends Gdn_Plugin {
          user_id = '".GetValue('UserID', $User)."',
          meta_key = 'wp_capabilities',
          meta_value = '".mysql_real_escape_string($Capability)."'");
-   }
-   
-   /**
-    * Create virtual controller.
-    */
-   public function PluginController_Glue_Create($Sender, $Args = array()) {
-      $this->Dispatch($Sender, $Args);
    }
    
    /**
