@@ -60,8 +60,6 @@ function glue_authenticate() {
  * @param int $postid
  */
 function glue_add_discussion($postid) {
-   global $wpdb;
-   
    // Verify discussion has not been created
    $discussionid = get_post_meta($postid, 'discussionid', true);
    if ($discussionid > 0)
@@ -74,17 +72,13 @@ function glue_add_discussion($postid) {
    // CategoryID
    $default_cat = Gdn::Config('Glue.Category.Default', 1);
    $categoryid = Gdn::Config('Glue.Category.'.$category->name, $default_cat);
-   
-   // UserID
+
+   // Build discussion data
    $userid = intval($the_post->post_author);
-   
-   // Data
    $title = $the_post->post_title;
    $link = str_replace('%postname%', $the_post->post_name, get_permalink($the_post->ID, true));
-   $body = '<a href="'.$link.'">'.$the_post->post_title.'</a>';
-   
-   // Create Discussion
-   $wpdb->insert(VANILLA_PREFIX.'Discussion', array(
+   $body = '<a href="'.$link.'">'.$title.'</a>';
+   $DiscussionData = array(
       'CategoryID' => $categoryid, 
       'InsertUserID' => $userid, 
       'Name' => $title, 
@@ -94,9 +88,13 @@ function glue_add_discussion($postid) {
       'DateUpdated' => $the_post->post_date,
       'DateLastComment' => $the_post->post_date )
    );
+   
+   // Create discussion
+   $DiscussionModel = new DiscussionModel();
+   $DiscussionID = $DiscussionModel->Save($DiscussionData);
 
    // Update Post
-   update_post_meta($postid, 'discussionid', $wpdb->insert_id);
+   update_post_meta($postid, 'discussionid', $DiscussionID);
 }
 
 /**
@@ -118,7 +116,8 @@ function glue_add_comment($commentid) {
    $discussionid = get_post_meta($comment->comment_post_ID, 'discussionid', true);
    
    // Create Comment
-   $wpdb->insert(VANILLA_PREFIX.'Comment', array(
+   $CommentModel = new CommentModel();
+   $CommentData = array(
      'DiscussionID' => $discussionid, 
      'InsertUserID' => $comment->user_id, 
      'Body' => $comment->comment_content, 
@@ -129,20 +128,9 @@ function glue_add_comment($commentid) {
      'GuestEmail' => $comment->comment_author_email, 
      'GuestUrl' => $comment->comment_author_url
    ));
-   
-   $commentid = $wpdb->insert_id;
-   
-   // Update discussion meta
-   $wpdb->update(VANILLA_PREFIX.'Discussion', 
-      array('DateLastComment' => $comment->comment_date, 'LastCommentUserID' => $comment->user_id), 
-      array('ID' => $discussionid)
-   );
-      
-   // Call CommentModel::Save2() with cURL magic
-   $URL = get_bloginfo('home');
-   $c = curl_init($URL.'/plugin/glue/savecomment/'.$commentid);
-   curl_exec($c);
-   curl_close($c);
+   $CommentID = $CommentModel->Save($CommentData);
+   if ($CommentID) 
+      $CommentModel->Save2($CommentID, TRUE, TRUE, TRUE);
 }
 
 /**
