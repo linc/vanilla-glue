@@ -73,7 +73,7 @@ class GluePlugin extends Gdn_Plugin {
     * Get Guest user data for discussions view.
     */
    public function DiscussionsController_BeforeDiscussionName_Handler($Sender, $Args) {
-      //$this->LastGuestUser($Args);
+      $this->LastGuestUser($Args);
    }
    
    /**
@@ -121,13 +121,10 @@ class GluePlugin extends Gdn_Plugin {
     * Remove WordPress cookies during signout.
     */
    public function EntryController_SignOut_Handler($Sender) {
-      /*setcookie(AUTH_COOKIE, ' ', time() - 31536000, ADMIN_COOKIE_PATH, COOKIE_DOMAIN);
-      setcookie(SECURE_AUTH_COOKIE, ' ', time() - 31536000, ADMIN_COOKIE_PATH, COOKIE_DOMAIN);
-      setcookie(AUTH_COOKIE, ' ', time() - 31536000, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN);
-      setcookie(SECURE_AUTH_COOKIE, ' ', time() - 31536000, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN);
-      setcookie(LOGGED_IN_COOKIE, ' ', time() - 31536000, COOKIEPATH, COOKIE_DOMAIN);
-      setcookie(LOGGED_IN_COOKIE, ' ', time() - 31536000, SITECOOKIEPATH, COOKIE_DOMAIN);
-      */
+      foreach ($_COOKIE as $Name => $Value) {
+         if (strstr($Name, 'wordpress') !== FALSE)
+            setcookie($Name, ' ', time() - 31536000);
+      }
    }
    
    /**
