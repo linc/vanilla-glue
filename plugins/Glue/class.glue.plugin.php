@@ -37,8 +37,8 @@ class GluePlugin extends Gdn_Plugin {
     * Fields that need to be set for most themes: InsertName, InsertEmail, InsertPhoto.
     * We'll also set InsertUrl to replicate WordPress functionality of linking name.
     */
-   public function CommentModel_AfterGet_Handler($Sender) {
-      foreach ($Sender->EventArguments['Comments'] as &$Comment) {
+   public function CommentModel_AfterGet_Handler($Sender, $Args) {
+      foreach ($Args['Comments'] as &$Comment) {
          if ($Comment->GuestName) {
             $Comment->InsertName = $Comment->GuestName;
             $Comment->InsertEmail = $Comment->GuestEmail;
@@ -54,8 +54,8 @@ class GluePlugin extends Gdn_Plugin {
     * activity, and mentions. It would cause tremendous duplication to do
     * all that in the WP plugin, so we quietly cURL to this "sekrit" URL.
     */
-   public function Controller_SaveComment($Sender) {
-      $CommentID = GetValue(1, $Sender->RequestArgs);
+   public function Controller_SaveComment($Sender, $Args) {
+      $CommentID = GetValue(1, $Args);
             
       // Update metadata on the comment & trigger activity
       $CommentModel = new CommentModel();
@@ -83,8 +83,8 @@ class GluePlugin extends Gdn_Plugin {
    /**
     * Because UserBuiler has a whitelist of properties that doesn't include InsertUrl. :(
     */
-   public function DiscussionController_BeforeCommentDisplay_Handler($Sender) {
-      $Sender->EventArguments['Author']->Url = GetValue('InsertUrl', $Sender->EventArguments['Object'], '');
+   public function DiscussionController_BeforeCommentDisplay_Handler($Sender, $Args) {
+      $Args['Author']->Url = GetValue('InsertUrl', $Args['Object'], '');
    }
    
    /**
@@ -219,23 +219,23 @@ class GluePlugin extends Gdn_Plugin {
 
       // Blog user record
       $SQL->Query("INSERT INTO ".WP_PREFIX."users SET
-         ID = '".$User->UserID."',
-         user_login = '".mysql_real_escape_string($User->Name)."',
-         user_pass = '".mysql_real_escape_string($User->Password)."',
-         user_nicename = '".mysql_real_escape_string(strtolower($User->Name))."',
-         user_email = '".mysql_real_escape_string($User->Email)."',
-         user_registered = '".mysql_real_escape_string($User->DateInserted)."',
-         display_name = '".mysql_real_escape_string($User->Name)."'");
+         ID = '".GetValue('UserID', $User)."',
+         user_login = '".mysql_real_escape_string(GetValue('Name', $User))."',
+         user_pass = '".mysql_real_escape_string(GetValue('Password', $User))."',
+         user_nicename = '".mysql_real_escape_string(strtolower(GetValue('Name', $User)))."',
+         user_email = '".mysql_real_escape_string(GetValue('Email', $User))."',
+         user_registered = '".mysql_real_escape_string(GetValue('DateInserted', $User))."',
+         display_name = '".mysql_real_escape_string(GetValue('Name', $User))."'");
             
       // Blog nickname
       $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
-         user_id = '".$User->UserID."',
+         user_id = '".GetValue('UserID', $User)."',
          meta_key = 'nickname',
-         meta_value = '".mysql_real_escape_string($User->Name)."'");
+         meta_value = '".mysql_real_escape_string(GetValue('Name', $User))."'");
          
       // Blog permission
       $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
-         user_id = '".$User->UserID."',
+         user_id = '".GetValue('UserID', $User)."',
          meta_key = 'wp_capabilities',
          meta_value = '".mysql_real_escape_string($Capability)."'");
    }
@@ -243,8 +243,8 @@ class GluePlugin extends Gdn_Plugin {
    /**
     * Create virtual controller.
     */
-   public function PluginController_Glue_Create($Sender) {
-      $this->Dispatch($Sender, $Sender->RequestArgs);
+   public function PluginController_Glue_Create($Sender, $Args = array()) {
+      $this->Dispatch($Sender, $Args);
    }
    
    /**
@@ -270,11 +270,11 @@ class GluePlugin extends Gdn_Plugin {
    /**
     * Port user to WordPress if it doesn't exist yet. Otherwise, update permission.
     */
-   public function UserModel_AfterSave_Handler($Sender) {
+   public function UserModel_AfterSave_Handler($Sender, $Args) {
       // Prep DB
       $Database = Gdn::Database();
       $SQL = $Database->SQL();
-      $UserID = $Sender->EventArguments['UserID'];
+      $UserID = $Args['UserID'];
       /*
       $Capability = $this->GetWordPressCapability($UserID);
       
@@ -296,8 +296,8 @@ class GluePlugin extends Gdn_Plugin {
    /**
     * Port new user to WordPress.
     */
-   public function UserModel_AfterInsertUser_Handler($Sender) {
-      $this->InsertWordPressUser($Sender->EventArguments['InsertUserID']);
+   public function UserModel_AfterInsertUser_Handler($Sender, $Args) {
+      $this->InsertWordPressUser($Args['InsertUserID']);
    }
 
    /**
