@@ -29,6 +29,9 @@ define('WP_PREFIX', $Prefix);
  * @todo Overwrite discussion URL with WordPress URL (DiscussionsController)
  * @todo Forward attempts to visit discussion to WordPress (DiscussionController)
  * @todo Signout should also sign out of WordPress
+ * @todo Quotes plugin needs this at end of FormatQuote function:
+      if (!GetValue('authorname', $QuoteData))
+         SetValue('authorname', $QuoteData, GetValue('GuestName', $Data));
  */
 class GluePlugin extends Gdn_Plugin {
    /**
