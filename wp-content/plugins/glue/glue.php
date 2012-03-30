@@ -13,7 +13,6 @@ Author URI: http://lincolnwebs.com
  *
  * @package Glue
  * @copyright 2011 Matt Lincoln Russell <lincolnwebs@gmail.com>
- * @todo Redirect to Vanilla log out.
  */
 
 // Pass GET params around Vanilla
@@ -36,6 +35,7 @@ add_action('publish_post', 'glue_add_discussion');
 add_action('comment_post', 'glue_add_comment');
 add_action('vanilla_comments', 'glue_get_comments');
 add_action('vanilla_postinfo', 'glue_get_postinfo');
+add_action('wp_logout', 'glue_logout');
 
 /**
  * Authenticate users from Vanilla cookie.
@@ -102,32 +102,29 @@ function glue_add_discussion($postid) {
  *
  * @param int $commentid
  */
-function glue_add_comment($commentid) {
-   global $wpdb;
-   
+function glue_add_comment($commentid) {   
    // Get comment info
+   global $wpdb;
    $comment = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."comments WHERE comment_ID = '$commentid'");
    
    // Ignore spam
    if ($comment->comment_approved == 'spam')
       return;
-   
-   // Get DiscussionID
-   $discussionid = get_post_meta($comment->comment_post_ID, 'discussionid', true);
-   
+      
    // Create Comment
    $CommentModel = new CommentModel();
    $CommentData = array(
-     'DiscussionID' => $discussionid, 
+     'DiscussionID' => get_post_meta($comment->comment_post_ID, 'discussionid', true), 
      'InsertUserID' => $comment->user_id, 
      'Body' => $comment->comment_content, 
-     'Format' => 'Html', 
+     'Format' => C('Garden.InputFormatter'), 
      'DateInserted' => $comment->comment_date, 
      'InsertIPAddress' => $comment->comment_author_IP, 
      'GuestName' => $comment->comment_author, 
      'GuestEmail' => $comment->comment_author_email, 
      'GuestUrl' => $comment->comment_author_url
    ));
+   
    $CommentID = $CommentModel->Save($CommentData);
    if ($CommentID) 
       $CommentModel->Save2($CommentID, TRUE, TRUE, TRUE);
@@ -136,24 +133,14 @@ function glue_add_comment($commentid) {
 /**
  * Get comments to display in WordPress.
  *
- * @todo Add a limit or pagination
+ * @todo Add a limit or pagination.
  * @param int $postid
  */
 function glue_get_comments($postid) {
-   global $wpdb, $vanilla_comments, $discussionid;
-   $discussionid = 0;
-      
-   // Get DiscussionID
+   global $vanilla_comments, $discussionid;
    $discussionid = get_post_meta($postid, 'discussionid', true);
-   
-   // Get all comments from discussion
-   $vanilla_comments = $wpdb->get_results("
-      SELECT c.CommentID, c.InsertUserID, c.Body, c.DateInserted, c.InsertIPAddress, u.UserID, u.Name, u.Photo, u.Email, 
-         c.GuestName, c.GuestEmail, c.GuestUrl, c.Format
-      FROM ".VANILLA_PREFIX."Comment c
-      LEFT JOIN ".VANILLA_PREFIX."User u ON u.UserID = c.InsertUserID
-      WHERE DiscussionID = $discussionid 
-      ORDER BY DateInserted ASC");
+   $CommentModel = new CommentModel();
+   $vanilla_comments = $CommentModel->Get($discussionid, 100)->Result(DATASET_TYPE_ARRAY);
 }
 
 /**
@@ -170,13 +157,11 @@ function glue_get_photo($data) {
 
    // Get photo URL
    $PhotoUrl = '/uploads/'.ChangeBasename($data->Photo, 'n%s'); // @todo Get PATH_UPLOADS / prefix
-   $Email = ($data->Email) ? $data->Email : $data->GuestEmail;
    if (!$data->Photo) {
-      // Use Gravatar + Vanillicon        
-      $PhotoUrl = 'http://www.gravatar.com/avatar.php?'
-         .'gravatar_id='.md5(strtolower($Email))
-         .'&amp;size=50'
-         .'&amp;default='.urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
+      // Use Gravatar + Vanillicon
+      $Email = ($data->Email) ? $data->Email : $data->GuestEmail;
+      $PhotoUrl = 'http://www.gravatar.com/avatar.php?gravatar_id='.md5(strtolower($Email)).'&amp;size=50&amp;default='.
+         urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
    }
    
    return $PhotoUrl;
@@ -189,10 +174,12 @@ function glue_get_photo($data) {
  * @return string Url path to user profile.
  */
 function glue_get_url($comment) {
-   if ($comment->UserID)
-      $Url = '/profile/'.$comment->UserID.'/'.rawurlencode($comment->Name); 
-   else
-      $Url = $comment->GuestUrl;
-      
-   return $Url;
+   return ($comment->UserID) ? '/profile/'.$comment->UserID.'/'.rawurlencode($comment->Name) : $comment->GuestUrl; 
+}
+
+/**
+ * Logout current user.
+ */
+function glue_logout() {
+   Gdn::Session()->End();
 }
