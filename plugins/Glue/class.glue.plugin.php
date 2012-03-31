@@ -8,11 +8,7 @@ $PluginInfo['Glue'] = array(
    'Author' => "Matt Lincoln Russell",
    'AuthorEmail' => 'lincolnwebs@gmail.com',
    'AuthorUrl' => 'http://lincolnwebs.com',
-   'RegisterPermissions' => array(
-      'WordPress.Blog.Contributor',
-      'WordPress.Blog.Author',
-      'WordPress.Blog.Editor',
-      'WordPress.Blog.Administrator'),
+   'RegisterPermissions' => array(),
    'RequiredApplications' => array('Vanilla' => '2.0.18'),
    'SettingsUrl' => '/dashboard/settings/glue'
 );
@@ -28,7 +24,6 @@ define('WP_PREFIX', $Prefix);
  * @todo Dashboard settings page
  * @todo Overwrite discussion URL with WordPress URL (DiscussionsController)
  * @todo Forward attempts to visit discussion to WordPress (DiscussionController)
- * @todo Signout should also sign out of WordPress
  * @todo Quotes plugin needs this at end of FormatQuote function:
       if (!GetValue('authorname', $QuoteData))
          SetValue('authorname', $QuoteData, GetValue('GuestName', $Data));
@@ -49,18 +44,6 @@ class GluePlugin extends Gdn_Plugin {
          }
       }
    }
-   
-   /**
-    * Add 'Featured' tab.
-    */
-   /*public function DiscussionsController_AfterDiscussionTabs_Handler($Sender) {
-      // Set options
-      $Options = array();
-      if  ($Sender->ControllerName == 'discussionscontroller' && $Sender->RequestMethod == 'featured')
-         $Options = array('class' => 'Active');
-      
-      echo Wrap(Anchor(T('Featured'), '/discussions/featured', 'Featured TabLink'), 'li', $Options);
-   }*/
    
    /**
     * Because UserBuiler has a whitelist of properties that doesn't include InsertUrl. :(
@@ -99,13 +82,6 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
-    * Create list of featured discussions.
-    */
-   public function DiscussionController_Featured_Create($Sender, $Args = array()) {
-      
-   }
-   
-   /**
     * If the discussion is based on a WordPress post, go to WordPress instead.
     */
    /*public function DiscussionController_BeforeDiscussionRender_Handler($Sender) {
@@ -125,36 +101,6 @@ class GluePlugin extends Gdn_Plugin {
          if (strstr($Name, 'wordpress') !== FALSE)
             setcookie($Name, ' ', time() - 31536000);
       }
-   }
-   
-   /**
-    * Get WordPress role name.
-    *
-    * @param int $UserID Unique ID.
-    * @return array WordPress-format capability array.
-    */
-   public function GetWordPressCapability($UserID) {
-      // Get Vanilla permission to assign WP capabilities
-      $FakeSession = new Gdn_Session();
-      $FakeSession->Start($UserID, FALSE);
-      switch (TRUE) {
-         case ($FakeSession->CheckPermission('WordPress.Blog.Administrator')) :
-            $Capability = array('administrator' => 1);
-            break;
-         case ($FakeSession->CheckPermission('WordPress.Blog.Editor')) :
-            $Capability = array('editor' => 1);
-            break;
-         case ($FakeSession->CheckPermission('WordPress.Blog.Author')) :
-            $Capability = array('author' => 1);
-            break;
-         case ($FakeSession->CheckPermission('WordPress.Blog.Contributor')) :
-            $Capability = array('contributor' => 1);
-            break;
-         default :
-            $Capability = array('subscriber' => 1);
-      }
-      unset($FakeSession);
-      return $Capability;
    }
    
    /**
@@ -251,7 +197,7 @@ class GluePlugin extends Gdn_Plugin {
    /**
     * Setting page.
     */
-   public function SettingsController_WordPress_Create($Sender, $Args = array()) {
+   public function SettingsController_Glue_Create($Sender, $Args = array()) {
       $Sender->Permission('Garden.Settings.Manage');
       if ($Sender->Form->IsPostBack()) {
          $Settings = array(
@@ -269,30 +215,11 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
-    * Port user to WordPress if it doesn't exist yet. Otherwise, update permission.
+    * Update user's name if it changes.
     */
-   public function UserModel_AfterSave_Handler($Sender, $Args) {
-      // Prep DB
-      $Database = Gdn::Database();
-      $SQL = $Database->SQL();
+   /*public function UserModel_AfterSave_Handler($Sender, $Args) {
       $UserID = $Args['UserID'];
-      /*
-      $Capability = $this->GetWordPressCapability($UserID);
-      
-      // Check if user already exists in WP
-      $User = $SQL->Query("select * from ".WP_PREFIX."users where ID = '$UserID'")->FirstRow();
-      if ($User->ID) {
-         // Update permission
-         $SQL->Query("update ".WP_PREFIX."usermeta 
-            set meta_value = '".mysql_real_escape_string(serialize($Capability))."'
-            where user_id = '$UserID'
-               and meta_key = 'wp_capabilities'");
-      } else { 
-         // User not in WP
-         $this->InsertWordPressUser($UserID, $Capability);
-      }
-      */
-   }
+   }*/
    
    /**
     * Port new user to WordPress.
