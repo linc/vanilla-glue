@@ -30,6 +30,23 @@ define('WP_PREFIX', $Prefix);
  */
 class GluePlugin extends Gdn_Plugin {
    /**
+    * Inject the email under the username on guest comments.
+    */
+   public function DiscussionController_CommentInfo_Handler($Sender, $Args) {
+      $this->AttachEmail($Sender, $Args);
+   }
+   public function PostController_CommentInfo_Handler($Sender, $Args) {
+      $this->AttachEmail($Sender, $Args);
+   }
+   private function AttachEmail($Sender, $Args) {
+      $Object = GetValue('Object', $Args);
+      $GuestEmail = GetValue('GuestEmail', $Object);
+      if (!$GuestEmail || GetValue('InsertUserID', $Object) || !CheckPermission('Garden.Moderation.Manage'))
+         return;
+      echo '<span class="MItem GuestEmail">'.$GuestEmail.'</span> ';
+   }
+   
+   /**
     * Use guest data on comments if UserID is zero.
     *
     * Fields that need to be set for most themes: InsertName, InsertEmail, InsertPhoto.
