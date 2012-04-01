@@ -166,7 +166,7 @@ function glue_get_photo($data) {
    
    // Get photo URL
    $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
-   if ($PhotoUrl && !strstr($PhotoUrl, 'http://'))
+   if ($PhotoUrl && !strstr($PhotoUrl, 'http'))
       $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
    if (!GetValue('InsertPhoto', $data)) {
       // Use Gravatar + Vanillicon
