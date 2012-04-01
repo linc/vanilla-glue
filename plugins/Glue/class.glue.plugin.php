@@ -4,7 +4,7 @@
 $PluginInfo['Glue'] = array(
    'Name' => 'Glue',
    'Description' => 'Glues WordPress to your Vanilla Forum permanently. See warnings in README.',
-   'Version' => '1.0a',
+   'Version' => '1.0',
    'Author' => "Matt Lincoln Russell",
    'AuthorEmail' => 'lincolnwebs@gmail.com',
    'AuthorUrl' => 'http://lincolnwebs.com',

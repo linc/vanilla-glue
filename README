@@ -43,3 +43,4 @@ FEATURES
 
 CHANGELOG
 =========
+1.0: Fixes all known issues except blank names in activity.
