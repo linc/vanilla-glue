@@ -182,33 +182,40 @@ class GluePlugin extends Gdn_Plugin {
       // Get user
       $UserModel = new UserModel();
       $User = $UserModel->GetID($UserID);
-      
+            
       // Get capability
       $Capability = ($Capability) ? $Capability : array('subscriber' => 1); // Default to subscriber
       if (is_array($Capability))
          $Capability = serialize($Capability);
 
       // Blog user record
-      $SQL->Query("INSERT INTO ".WP_PREFIX."users SET
-         ID = '".GetValue('UserID', $User)."',
-         user_login = '".mysql_real_escape_string(GetValue('Name', $User))."',
-         user_pass = '".mysql_real_escape_string(GetValue('Password', $User))."',
-         user_nicename = '".mysql_real_escape_string(strtolower(GetValue('Name', $User)))."',
-         user_email = '".mysql_real_escape_string(GetValue('Email', $User))."',
-         user_registered = '".mysql_real_escape_string(GetValue('DateInserted', $User))."',
-         display_name = '".mysql_real_escape_string(GetValue('Name', $User))."'");
-            
+      $SQL->NamedParameters(array(
+         ':ID' => GetValue('UserID', $User),
+         ':user_login' => GetValue('Name', $User),
+         ':user_pass' => GetValue('Password', $User),
+         ':user_nicename' => strtolower(GetValue('Name', $User)),
+         ':user_email' => GetValue('Email', $User),
+         ':user_registered' => GetValue('DateInserted', $User),
+         ':display_name' => GetValue('Name', $User)
+      ));
+      $SQL->Query("INSERT INTO ".WP_PREFIX."users SET ID = :ID, user_login = :user_login, user_pass = :user_pass, 
+         user_nicename = :user_nicename, user_email = :user_email, user_registered = :user_registered, display_name = :display_name", 'insert');
+                        
       // Blog nickname
-      $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
-         user_id = '".GetValue('UserID', $User)."',
-         meta_key = 'nickname',
-         meta_value = '".mysql_real_escape_string(GetValue('Name', $User))."'");
+      $SQL->NamedParameters(array(
+         ':user_id' => GetValue('UserID', $User),
+         ':meta_key' => 'nickname',
+         ':meta_value' => GetValue('Name', $User)
+      ));
+      $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET user_id = :user_id, meta_key = :meta_key, meta_value = :meta_value", 'insert');
          
       // Blog permission
-      $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET
-         user_id = '".GetValue('UserID', $User)."',
-         meta_key = 'wp_capabilities',
-         meta_value = '".mysql_real_escape_string($Capability)."'");
+      $SQL->NamedParameters(array(
+         ':user_id' => GetValue('UserID', $User),
+         ':meta_key' => 'wp_capabilities',
+         ':meta_value' => $Capability
+      ));
+      $SQL->Query("INSERT INTO ".WP_PREFIX."usermeta SET user_id = :user_id, meta_key = :meta_key, meta_value = :meta_value", 'insert');
    }
    
    /**
