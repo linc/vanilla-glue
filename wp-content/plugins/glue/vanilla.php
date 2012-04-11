@@ -21,6 +21,19 @@ define('PATH_ROOT', VANILLA_PATH); // Previously defined by config; do not recal
 // Include the bootstrap to configure the framework.
 require_once(PATH_ROOT.'/bootstrap.php');
 
+$Dispatcher = Gdn::Dispatcher();
+
+$EnabledApplications = Gdn::ApplicationManager()->EnabledApplicationFolders();
+$Dispatcher->EnabledApplicationFolders($EnabledApplications);
+$Dispatcher->PassProperty('EnabledApplications', $EnabledApplications);
+
+// 4. Fake the DiscussionsController
+$Dispatcher->Start();
+$Controller = new DiscussionsController();
+Gdn::Controller($Controller);
+//$Dispatcher->Dispatch();
+//$Dispatcher->Cleanup();
+
 // Define Vanilla's database prefix for easy access
 $Prefix = Gdn::Config('Database.DatabasePrefix');
 define('VANILLA_PREFIX', $Prefix);

@@ -73,7 +73,7 @@ class GluePlugin extends Gdn_Plugin {
     * Get Guest user data for discussions view.
     */
    public function DiscussionsController_BeforeDiscussionName_Handler($Sender, $Args) {
-      $this->LastGuestUser($Args);
+      //$this->LastGuestUser($Args);
    }
    
    /**
