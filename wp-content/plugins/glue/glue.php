@@ -92,6 +92,7 @@ function glue_add_discussion($postid) {
    
    // Create discussion
    $DiscussionModel = new DiscussionModel();
+   $DiscussionModel->SpamCheck = FALSE;
    $DiscussionID = $DiscussionModel->Save($DiscussionData);
 
    // Update Post
@@ -109,7 +110,7 @@ function glue_add_comment($commentid) {
    $comment = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."comments WHERE comment_ID = '$commentid'");
    
    // Ignore spam
-   if ($comment->comment_approved == 'spam')
+   if ($comment->comment_approved === 'spam')
       return;
       
    // Create Comment
@@ -126,6 +127,7 @@ function glue_add_comment($commentid) {
      'GuestUrl' => $comment->comment_author_url
    );
    
+   $CommentModel->SpamCheck = FALSE;
    $CommentID = $CommentModel->Save($CommentData);
    if ($CommentID) 
       $CommentModel->Save2($CommentID, TRUE, TRUE, TRUE);
