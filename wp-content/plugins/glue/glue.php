@@ -163,10 +163,10 @@ function glue_get_comments($postid) {
 function glue_get_photo($data) {
    if (is_numeric($data)) {
       global $wpdb;
-      $data = $wpdb->get_row("SELECT Name as InsertName, Photo as InsertPhoto, Email as InsertEmail, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
+      $data = $wpdb->get_row("SELECT UserID as InsertUserID, Name as InsertName, Photo as InsertPhoto, Email as InsertEmail, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
    }
    
-   if (GetValue('GuestEmail', $data)) {
+   if (!GetValue('InsertUserID', $data)) {
       // Override Gravatar + Vanillicon
       $Email = GetValue('InsertEmail', $data, GetValue('GuestEmail', $data));
       $PhotoUrl = 'http://www.gravatar.com/avatar.php?gravatar_id='.md5(strtolower($Email)).'&amp;size=50&amp;default='.
