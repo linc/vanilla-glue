@@ -47,21 +47,16 @@ class GluePlugin extends Gdn_Plugin {
    }
    
    /**
-    * Use guest data on comments if UserID is zero.
-    *
-    * Fields that need to be set for most themes: InsertName, InsertEmail, InsertPhoto.
-    * We'll also set InsertUrl to replicate WordPress functionality of linking name.
+    * Build Author data for comments by guests.
     */
-   public function CommentModel_AfterGet_Handler($Sender, $Args) {
-      foreach ($Args['Comments'] as &$Comment) {
-         if ($Comment->GuestName) {
-            $Comment->InsertName = $Comment->GuestName;
-            $Comment->InsertEmail = $Comment->GuestEmail;
-            $Comment->InsertUrl = $Comment->GuestUrl;
-         }
+   public function Base_BeforeCommentDisplay_Handler($Sender, $Args) {
+      if (GetValue('GuestName', $Args['Comment'])) {
+         SetValue('Name', $Args['Author'], GetValue('GuestName', $Args['Comment']));
+         SetValue('Email', $Args['Author'], GetValue('GuestEmail', $Args['Comment']));
+         SetValue('Url', $Args['Author'], GetValue('GuestUrl', $Args['Comment']));
       }
    }
-   
+      
    /**
     * Because UserBuiler has a whitelist of properties that doesn't include InsertUrl. :(
     */
@@ -339,9 +334,13 @@ if (!function_exists('UserAnchor')) {
          $Link = $UserUrl;
          $NoFollow = ' rel="nofollow"';
       }
-      else {
+      elseif ($UserID) {
          $Link = Url('/profile/'.($NameUnique ? '' : "$UserID/").rawurlencode($Name));
          $NoFollow = '';
+      }
+      else {
+         // Guest with no URL
+         $Link = '#';
       }
          
       return '<a href="'.htmlspecialchars($Link).'"'.$CssClass.$NoFollow.'>'.htmlspecialchars($Name).'</a>';
