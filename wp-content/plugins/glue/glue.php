@@ -176,7 +176,7 @@ function glue_get_photo($data) {
       // Get photo URL
       $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
       $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
-}
+   }
   
    return $PhotoUrl;
 }
