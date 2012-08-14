@@ -166,8 +166,6 @@ function glue_get_photo($data) {
       global $wpdb;
       $data = $wpdb->get_row("SELECT UserID as InsertUserID, Name as InsertName, Photo as InsertPhoto, Email as InsertEmail, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
    }
-   
-   $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
 
    if (!GetValue('InsertPhoto', $data)) {
       // Override Gravatar + Vanillicon
@@ -176,6 +174,7 @@ function glue_get_photo($data) {
          urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
    } else {
       // Get photo URL
+      $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
       $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
 }
   
