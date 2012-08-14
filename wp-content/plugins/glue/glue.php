@@ -169,7 +169,7 @@ function glue_get_photo($data) {
    
    $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
 
-   if ($PhotoUrl == '' || !GetValue('InsertUserID', $data)) {
+   if (!GetValue('InsertPhoto', $data)) {
       // Override Gravatar + Vanillicon
       $Email = GetValue('InsertEmail', $data, GetValue('GuestEmail', $data));
       $PhotoUrl = 'http://www.gravatar.com/avatar.php?gravatar_id='.md5(strtolower($Email)).'&amp;size=50&amp;default='.
