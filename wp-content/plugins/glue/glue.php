@@ -166,19 +166,18 @@ function glue_get_photo($data) {
       $data = $wpdb->get_row("SELECT UserID as InsertUserID, Name as InsertName, Photo as InsertPhoto, Email as InsertEmail, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
    }
    
-   if (!GetValue('InsertUserID', $data)) {
+   $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
+
+   if ($PhotoUrl == '' || !GetValue('InsertUserID', $data)) {
       // Override Gravatar + Vanillicon
       $Email = GetValue('InsertEmail', $data, GetValue('GuestEmail', $data));
       $PhotoUrl = 'http://www.gravatar.com/avatar.php?gravatar_id='.md5(strtolower($Email)).'&amp;size=50&amp;default='.
          urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
-   }
-   else {
+   } else {
       // Get photo URL
-      $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
-      if ($PhotoUrl && !strstr($PhotoUrl, 'http'))
-         $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
-   }
-   
+      $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
+}
+  
    return $PhotoUrl;
 }
 
