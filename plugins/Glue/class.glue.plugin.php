@@ -51,7 +51,11 @@ class GluePlugin extends Gdn_Plugin {
     */
    public function Base_BeforeCommentDisplay_Handler($Sender, $Args) {
       if (GetValue('GuestName', $Args['Comment'])) {
-         SetValue('Name', $Args['Author'], GetValue('GuestName', $Args['Comment']));
+         if(!GetValue('GuestName', $Args['Comment']) == GetValue('InsertName', $Args['Comment'])) {
+            SetValue('Name', $Args['Author'], GetValue('GuestName', $Args['Comment']));
+         } else {
+            SetValue('Name', $Args['Author'], GetValue('InsertName', $Args['Comment']));
+         }
          SetValue('Email', $Args['Author'], GetValue('GuestEmail', $Args['Comment']));
          SetValue('Url', $Args['Author'], GetValue('GuestUrl', $Args['Comment']));
       }
