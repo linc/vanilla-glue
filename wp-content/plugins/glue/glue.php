@@ -121,11 +121,16 @@ function glue_add_comment($commentid) {
      'Body' => $comment->comment_content, 
      'Format' => C('Garden.InputFormatter'), 
      'DateInserted' => $comment->comment_date, 
-     'InsertIPAddress' => $comment->comment_author_IP, 
-     'GuestName' => $comment->comment_author, 
-     'GuestEmail' => $comment->comment_author_email, 
-     'GuestUrl' => $comment->comment_author_url
+     'InsertIPAddress' => $comment->comment_author_IP
    );
+
+   if ($comment->user_id > 0) {
+     array_merge($CommentData, array(
+       'GuestName' => $comment->comment_author, 
+       'GuestEmail' => $comment->comment_author_email, 
+       'GuestUrl' => $comment->comment_author_url
+     ));
+   }
    
    $CommentModel->SpamCheck = FALSE;
    $CommentID = $CommentModel->Save($CommentData);
