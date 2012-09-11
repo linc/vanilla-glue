@@ -126,14 +126,12 @@ function glue_add_comment($commentid) {
      'InsertIPAddress' => $comment->comment_author_IP
    );
 
-   if (!intval($comment->user_id) > 0) {
-     array_merge($CommentData, array(
-       'GuestName' => $comment->comment_author, 
-       'GuestEmail' => $comment->comment_author_email, 
-       'GuestUrl' => $comment->comment_author_url
-     ));
+   if (!$comment->user_id > 0) {
+      $CommentData['GuestName'] = $comment->comment_author;
+      $CommentData['GuestEmail'] = $comment->comment_author_email;
+      $CommentData['GuestUrl'] = $comment->comment_author_url;
    }
-   
+
    $CommentModel->SpamCheck = FALSE;
    $CommentID = $CommentModel->Save($CommentData);
    if ($CommentID) 
