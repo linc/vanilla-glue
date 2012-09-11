@@ -102,6 +102,8 @@ function glue_add_discussion($postid) {
 /**
  * Copy new WordPress comment to Vanilla Comment.
  *
+ * 9-10-12 / Do not insert GuestName, GuestEmail, and GuestUrl for Registered Users.
+ *
  * @param int $commentid
  */
 function glue_add_comment($commentid) {   
@@ -121,12 +123,15 @@ function glue_add_comment($commentid) {
      'Body' => $comment->comment_content, 
      'Format' => C('Garden.InputFormatter'), 
      'DateInserted' => $comment->comment_date, 
-     'InsertIPAddress' => $comment->comment_author_IP, 
-     'GuestName' => $comment->comment_author, 
-     'GuestEmail' => $comment->comment_author_email, 
-     'GuestUrl' => $comment->comment_author_url
+     'InsertIPAddress' => $comment->comment_author_IP
    );
-   
+
+   if (!$comment->user_id > 0) {
+      $CommentData['GuestName'] = $comment->comment_author;
+      $CommentData['GuestEmail'] = $comment->comment_author_email;
+      $CommentData['GuestUrl'] = $comment->comment_author_url;
+   }
+
    $CommentModel->SpamCheck = FALSE;
    $CommentID = $CommentModel->Save($CommentData);
    if ($CommentID) 
@@ -166,19 +171,18 @@ function glue_get_photo($data) {
       $data = $wpdb->get_row("SELECT UserID as InsertUserID, Name as InsertName, Photo as InsertPhoto, Email as InsertEmail, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
    }
    
-   if (!GetValue('InsertUserID', $data)) {
+   $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
+
+   if ($PhotoUrl == '' || !GetValue('InsertUserID', $data)) {
       // Override Gravatar + Vanillicon
       $Email = GetValue('InsertEmail', $data, GetValue('GuestEmail', $data));
       $PhotoUrl = 'http://www.gravatar.com/avatar.php?gravatar_id='.md5(strtolower($Email)).'&amp;size=50&amp;default='.
          urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
-   }
-   else {
+   } else {
       // Get photo URL
-      $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
-      if ($PhotoUrl && !strstr($PhotoUrl, 'http'))
-         $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
-   }
-   
+      $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
+}
+  
    return $PhotoUrl;
 }
 
