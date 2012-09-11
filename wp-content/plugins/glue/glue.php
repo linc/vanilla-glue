@@ -102,6 +102,8 @@ function glue_add_discussion($postid) {
 /**
  * Copy new WordPress comment to Vanilla Comment.
  *
+ * 9-10-12 / Do not insert GuestName, GuestEmail, and GuestUrl for Registered Users.
+ *
  * @param int $commentid
  */
 function glue_add_comment($commentid) {   
