@@ -142,7 +142,7 @@ function glue_add_comment($commentid) {
  */
 function glue_get_comments($postid) {
    global $vanilla_comments, $discussionid;
-   $discussionid = get_post_meta($postid, 'discussionid', true);
+   $discussionid = intval(get_post_meta($postid, 'discussionid', true));
    
    // Get comments
    $CommentModel = new CommentModel();
