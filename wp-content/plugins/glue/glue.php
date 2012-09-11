@@ -126,7 +126,7 @@ function glue_add_comment($commentid) {
      'InsertIPAddress' => $comment->comment_author_IP
    );
 
-   if ($comment->user_id > 0) {
+   if (!$comment->user_id > 0) {
      array_merge($CommentData, array(
        'GuestName' => $comment->comment_author, 
        'GuestEmail' => $comment->comment_author_email, 
