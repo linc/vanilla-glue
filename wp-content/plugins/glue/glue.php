@@ -154,6 +154,40 @@ function glue_get_comments($postid) {
 }
 
 /**
+ * Check if the discussion for the article exists.
+ * If exists, returns TRUE. If it doesn't exist, it doesn't return any value.
+ * Usage: if(glue_check_comments_exist($post->ID)) { echo "exists"; }
+ */
+function glue_check_comments_exist($postid) {
+   $discussionid = intval(get_post_meta($postid, 'discussionid', true));
+
+   global $wpdb;
+   $checkexists = $wpdb->get_col("SELECT DiscussionID FROM ".VANILLA_PREFIX."Discussion WHERE DiscussionID = '$discussionid'");
+
+   if(!empty($checkexists)) {
+     return TRUE;
+   }
+}
+
+/**
+ * Check if the discussion for the article is closed.
+ * If closed, returns TRUE. If it's open, it doesn't return any value.
+ * Usage: if(glue_check_comments_closed($post->ID)) { echo "closed"; }
+ */
+function glue_check_comments_closed($postid) {
+   $discussionid = intval(get_post_meta($postid, 'discussionid', true));
+   
+   global $wpdb;
+   $discussion = $wpdb->get_col("SELECT Closed FROM ".VANILLA_PREFIX."Discussion WHERE DiscussionID = '$discussionid'");
+
+   $checkclosed = intval($discussion[0]);
+
+   if($checkclosed == 1) {
+     return TRUE;
+   }
+}
+
+/**
  * Get avatar/photo URL for a comment user.
  *
  * @param mixed $data UserID (int) or object containing user data.
