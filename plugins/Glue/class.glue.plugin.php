@@ -330,13 +330,13 @@ if (!function_exists('UserAnchor')) {
       
       // Use Guest's provided URL with nofollow attribute
       $UserUrl = GetValue($Px.'Url', $User, FALSE);
+      $NoFollow = '';
       if ($UserUrl) {
          $Link = $UserUrl;
          $NoFollow = ' rel="nofollow"';
       }
       elseif ($UserID) {
          $Link = Url('/profile/'.($NameUnique ? '' : "$UserID/").rawurlencode($Name));
-         $NoFollow = '';
       }
       else {
          // Guest with no URL
