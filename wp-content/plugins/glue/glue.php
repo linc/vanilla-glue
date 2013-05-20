@@ -127,7 +127,7 @@ function glue_add_comment($commentid) {
      'GuestUrl' => $comment->comment_author_url
    );
    
-   $CommentModel->SpamCheck = FALSE;
+   //$CommentModel->SpamCheck = FALSE; // Srsly wtf was I doing here
    $CommentID = $CommentModel->Save($CommentData);
    if ($CommentID) 
       $CommentModel->Save2($CommentID, TRUE, TRUE, TRUE);
