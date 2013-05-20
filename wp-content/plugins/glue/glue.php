@@ -112,11 +112,18 @@ function glue_add_comment($commentid) {
    // Ignore spam
    if ($comment->comment_approved === 'spam')
       return;
+   
+   // Check for closed discussions
+   $DiscussionID = get_post_meta($comment->comment_post_ID, 'discussionid', true);
+   $DiscussionModel = new DiscussionModel();
+   $Discussion = $DiscussionModel->GetID($DiscussionModel);
+   if ($Discussion->Closed == 1)
+      return;
       
    // Create Comment
    $CommentModel = new CommentModel();
    $CommentData = array(
-     'DiscussionID' => get_post_meta($comment->comment_post_ID, 'discussionid', true), 
+     'DiscussionID' => $DiscussionID, 
      'InsertUserID' => $comment->user_id, 
      'Body' => $comment->comment_content, 
      'Format' => C('Garden.InputFormatter'), 
@@ -140,7 +147,8 @@ function glue_add_comment($commentid) {
  * @param int $postid
  */
 function glue_get_comments($postid) {
-   global $vanilla_comments, $discussionid;
+   global $vanilla_comments, $discussionid, $discussion_closed;
+   $discussion_closed = FALSE;
    $discussionid = get_post_meta($postid, 'discussionid', true);
    if (!$discussionid) {
       $vanilla_comments = array();
@@ -155,6 +163,8 @@ function glue_get_comments($postid) {
    // Set user discussion data
    $DiscussionModel = new DiscussionModel();
    $Discussion = $DiscussionModel->GetID($discussionid);
+   if ($Discussion->Closed)
+      $discussion_closed = TRUE;
    $CommentModel->SetWatch($Discussion, $CommentData->NumRows(), 0, $Discussion->CountComments);
 }
 
