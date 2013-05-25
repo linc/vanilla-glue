@@ -177,28 +177,18 @@ function glue_get_comments($postid) {
  * Get avatar/photo URL for a comment user.
  *
  * @param mixed $data UserID (int) or object containing user data.
- * @return string Url of photo.
+ * @return string HTML for user photo.
  */
-function glue_get_photo($data) {
+function glue_get_photo($data, $Options = array()) {
    if (is_numeric($data)) {
       global $wpdb;
       $data = $wpdb->get_row("SELECT UserID as InsertUserID, Name as InsertName, Photo as InsertPhoto, Email as InsertEmail, DateFirstVisit FROM ".VANILLA_PREFIX."User WHERE UserID = $data");
    }
    
-   if (!GetValue('InsertUserID', $data)) {
-      // Override Gravatar + Vanillicon
-      $Email = GetValue('InsertEmail', $data) ?: GetValue('GuestEmail', $data);
-      $PhotoUrl = 'http://www.gravatar.com/avatar.php?gravatar_id='.md5(strtolower($Email)).'&amp;size=50&amp;default='.
-         urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
-   }
-   else {
-      // Get photo URL
-      $PhotoUrl = GetValue('InsertPhoto', $data); // @todo Get PATH_UPLOADS / prefix
-      if ($PhotoUrl && !strstr($PhotoUrl, 'http'))
-         $PhotoUrl = '/uploads/'.ChangeBasename($PhotoUrl, 'n%s');
-   }
+   $Px = (GetValue('InsertUserID', $data)) ? array('Px' => 'Insert') : array('Px' => 'Guest');   
+   $Options = array_merge($Options, $Px);
    
-   return $PhotoUrl;
+   return UserPhoto($data, $Options);
 }
 
 /**
