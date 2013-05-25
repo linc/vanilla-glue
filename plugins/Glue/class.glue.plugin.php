@@ -314,35 +314,68 @@ class GluePlugin extends Gdn_Plugin {
 
 if (!function_exists('UserAnchor')) {
    /**
-    * Override UserAnchor to account for $UserUrl.
+    * Add nofollow for guests.
     */
-   function UserAnchor($User, $CssClass = '', $Options = NULL) {
+   function UserAnchor($User, $CssClass = NULL, $Options = NULL) {
       static $NameUnique = NULL;
       if ($NameUnique === NULL)
          $NameUnique = C('Garden.Registration.NameUnique');
       
-      $Px = $Options;
+      if (is_array($CssClass)) {
+         $Options = $CssClass;
+         $CssClass = NULL;
+      } elseif (is_string($Options))
+         $Options = array('Px' => $Options);
+      
+      $Px = GetValue('Px', $Options, '');
+      
       $Name = GetValue($Px.'Name', $User, T('Unknown'));
       $UserID = GetValue($Px.'UserID', $User, 0);
-   
-      if ($CssClass != '')
-         $CssClass = ' class="'.$CssClass.'"';
+      $Text = GetValue('Text', $Options, htmlspecialchars($Name)); // Allow anchor text to be overridden.
       
-      // Use Guest's provided URL with nofollow attribute
-      $UserUrl = GetValue($Px.'Url', $User, FALSE);
-      $NoFollow = '';
-      if ($UserUrl) {
-         $Link = $UserUrl;
-         $NoFollow = ' rel="nofollow"';
+      // Guest hax
+      if (!$UserID)
+         $Options['Rel'] = 'nofollow';
+      
+      $Attributes = array(
+          'class' => $CssClass,
+          'rel' => GetValue('Rel', $Options)
+          );
+      $UserUrl = UserUrl($User,$Px);
+      return '<a href="'.htmlspecialchars(Url($UserUrl)).'"'.Attribute($Attributes).'>'.$Text.'</a>';
+   }
+}
+
+if (!function_exists('UserUrl')) {
+   /**
+    * Use guest URLs.
+    */
+   function UserUrl($User, $Px = '', $Method = '', $Get = FALSE) {
+      static $NameUnique = NULL;
+      if ($NameUnique === NULL)
+         $NameUnique = C('Garden.Registration.NameUnique');
+      
+      $UserName = GetValue($Px.'Name', $User);
+      $UserName = preg_replace('/([\?&]+)/', '', $UserName);
+      
+      // Use Guest's provided URL
+      if ($UserUrl = GetValue($Px.'Url', $User, FALSE)) {
+         $Result = $UserUrl;
       }
-      elseif ($UserID) {
-         $Link = Url('/profile/'.($NameUnique ? '' : "$UserID/").rawurlencode($Name));
+      elseif (GetValue('UserID', $User)) {
+         $Result = '/profile/'.
+            ($Method ? trim($Method, '/').'/' : '').
+            ($NameUnique ? '' : GetValue($Px.'UserID', $User, 0).'/').
+            rawurlencode($UserName);
       }
       else {
          // Guest with no URL
-         $Link = '#';
+         $Result = '#';
       }
-         
-      return '<a href="'.htmlspecialchars($Link).'"'.$CssClass.$NoFollow.'>'.htmlspecialchars($Name).'</a>';
+      
+      if ($Get)
+         $Result .= '?'.http_build_query($Get);
+      
+      return $Result;
    }
 }
