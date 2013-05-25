@@ -86,7 +86,6 @@ function glue_add_discussion($postid) {
       'Body' => $body, 
       'Format' => 'Html', 
       'DateInserted' => $the_post->post_date,
-      'DateUpdated' => $the_post->post_date,
       'DateLastComment' => $the_post->post_date
    );
    
