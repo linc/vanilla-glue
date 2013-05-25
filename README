@@ -1,11 +1,15 @@
 SUMMARY
 =======
-These plugins are for experienced web developers who want to add WordPress to a Vanilla Forum community with synched users, synched comments, no iframes, and the smoothest user experience.
+These plugins are for experienced web developers who want to add WordPress to a Vanilla Forum community with 
+synched users, synched comments, no iframes, and the smoothest user experience.
+
+It is primarily for *Vanilla* developers, not WordPress developers. It essentially borgs WordPress into being
+a convenient CMS addon to Vanilla and enables Vanilla framework use within your WordPress theme.
 
 LEGAL
 =====
 @license GNU GPL2 (@see LICENSE)
-@copyright 2011 Matt Lincoln Russell <lincolnwebs@gmail.com>
+@copyright 2011 Lincoln Russell <lincolnwebs@gmail.com>
 
 WARNING
 =======
@@ -20,7 +24,7 @@ BACKUP YOUR DATABASE, CONFIG FILES, AND ANY CUSTOMIZATIONS BEFORE INSTALLING GLU
 
 REQUIREMENTS
 ============
-0. Wordpress 3.0 and Vanilla 2.0.18
+0. Wordpress 3.0 and Vanilla 2.1
 1. WP and Vanilla MUST use the same database.
 2. WP and Vanilla MUST be on the same domain.
 
@@ -36,11 +40,17 @@ UPDATING YOUR THEME
 ===================
 1. Add to comments.php template: global $vanilla_comments; do_action('vanilla_comments', $post_id);
 2. Add to single.php template: global $vanilla_postinfo; do_action('vanilla_postinfo', $post_id);
+3. Adapt both templates to use provided glue_ functions for user info.
 
 FEATURES
 ========
-
+0. Enables guest commenting in Vanilla via WordPress comments.
+1. Syncs comments between WordPress and Vanilla (by displaying both from Vanilla).
+2. Syncs users between WordPress and Vanilla (using Vanilla as the canonical copy).
+3. Signing into Vanilla signs you into WordPress.
+4. Allows you to use the entire Vanilla framework in your WordPress theme.
 
 CHANGELOG
 =========
 1.0: Fixes all known issues except blank names in activity.
+1.1: Improvements to auth & avatars, discussion closing, lots of minor fixes
