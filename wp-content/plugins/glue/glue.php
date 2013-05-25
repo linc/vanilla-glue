@@ -4,7 +4,7 @@ Plugin Name: Glue
 Plugin URI: 
 Description: Glues WordPress to your Vanilla Forum.
 Author: Matt Lincoln Russell
-Version: 1.0
+Version: 1.1
 Author URI: http://lincolnwebs.com
 */
 
