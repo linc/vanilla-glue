@@ -182,7 +182,7 @@ function glue_get_photo($data) {
    
    if (!GetValue('InsertUserID', $data)) {
       // Override Gravatar + Vanillicon
-      $Email = GetValue('InsertEmail', $data, GetValue('GuestEmail', $data));
+      $Email = GetValue('InsertEmail', $data) ?: GetValue('GuestEmail', $data);
       $PhotoUrl = 'http://www.gravatar.com/avatar.php?gravatar_id='.md5(strtolower($Email)).'&amp;size=50&amp;default='.
          urlencode('http://vanillicon.com/'.md5(strtolower($Email)).'.png');
    }
