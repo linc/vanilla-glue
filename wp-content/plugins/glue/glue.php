@@ -40,8 +40,6 @@ add_action('admin_menu', 'glue_block_profile');
 
 /**
  * Authenticate users from Vanilla cookie.
- *
- * @todo Fix authentication lag - requires refresh after initial signin
  */
 function glue_authenticate() {
    // Get & authenticate Vanilla cookie
@@ -50,6 +48,7 @@ function glue_authenticate() {
 
    // Set WordPress cookie
    if ($userid > 0) {
+      wp_set_current_user($userid); 
       wp_set_auth_cookie($userid, true);
       setup_userdata($userid);
    }
