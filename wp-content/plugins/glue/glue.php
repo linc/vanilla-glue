@@ -84,13 +84,13 @@ function glue_add_discussion($postid) {
       'Name' => $title, 
       'Body' => $body, 
       'Format' => 'Html', 
-      'DateInserted' => $the_post->post_date,
-      'DateLastComment' => $the_post->post_date
+      'DateInserted' => $the_post->post_date
    );
    
    // Create discussion
    $DiscussionModel = new DiscussionModel();
    $DiscussionModel->SpamCheck = FALSE;
+   $DiscussionModel->Glue = TRUE; // Set flag to intercept DateLastComment later
    $DiscussionID = $DiscussionModel->Save($DiscussionData);
 
    // Update Post

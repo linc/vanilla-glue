@@ -56,6 +56,14 @@ class GluePlugin extends Gdn_Plugin {
          SetValue('Url', $Args['Author'], GetValue('GuestUrl', $Args['Comment']));
       }
    }
+   
+   /**
+    * Workaround for timezone wonkery.
+    */
+   public function Base_BeforeSaveDiscussion_Handler($Sender, $Args) {
+      if (property_exists($Sender, 'Glue'))
+         $Args['FormPostValues']['DateLastComment'] = $Args['FormPostValues']['DateInserted'];
+   }
       
    /**
     * Because UserBuiler has a whitelist of properties that doesn't include InsertUrl. :(
