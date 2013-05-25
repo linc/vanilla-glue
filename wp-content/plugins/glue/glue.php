@@ -116,7 +116,7 @@ function glue_add_comment($commentid) {
    // Check for closed discussions
    $DiscussionID = get_post_meta($comment->comment_post_ID, 'discussionid', true);
    $DiscussionModel = new DiscussionModel();
-   $Discussion = $DiscussionModel->GetID($DiscussionModel);
+   $Discussion = $DiscussionModel->GetID($DiscussionID);
    if ($Discussion->Closed == 1)
       return;
       
