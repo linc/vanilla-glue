@@ -151,7 +151,7 @@ function glue_get_comments($postid) {
    $discussionid = get_post_meta($postid, 'discussionid', true);
    if (!$discussionid) {
       $vanilla_comments = array();
-      return;
+      return FALSE;
    }
    
    // Get comments
@@ -162,8 +162,14 @@ function glue_get_comments($postid) {
    // Set user discussion data
    $DiscussionModel = new DiscussionModel();
    $Discussion = $DiscussionModel->GetID($discussionid);
+   
+   if (!$Discussion)
+      return FALSE;
+   
+   // Detect closed state
    if ($Discussion->Closed)
       $discussion_closed = TRUE;
+   
    $CommentModel->SetWatch($Discussion, $CommentData->NumRows(), 0, $Discussion->CountComments);
 }
 
