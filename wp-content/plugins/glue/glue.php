@@ -147,6 +147,10 @@ function glue_add_comment($commentid) {
 function glue_get_comments($postid) {
    global $vanilla_comments, $discussionid, $discussion_closed;
    $discussion_closed = FALSE;
+   
+   if (!is_numeric($postid))
+      return FALSE;
+   
    $discussionid = get_post_meta($postid, 'discussionid', true);
    if (!$discussionid) {
       $vanilla_comments = array();
