@@ -117,6 +117,11 @@ function glue_add_comment($commentid) {
    $Discussion = $DiscussionModel->GetID($DiscussionID);
    if ($Discussion->Closed == 1)
       return;
+
+   // Check for guest comment timeout
+   $DaysSince = (strtotime($Discussion->DateInserted) - now()) / 3600 / 24;
+   if ($DaysSince > C('Glue.Comments.DaysAllowed'))
+      return;
       
    // Create Comment
    $CommentModel = new CommentModel();

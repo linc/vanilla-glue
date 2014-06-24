@@ -238,7 +238,7 @@ class GluePlugin extends Gdn_Plugin {
       
       $Sender->AddSideMenu();
       $Sender->SetData('Title', T('WordPress Settings'));
-      $Sender->Render('Settings', '', 'plugins/wordpress');
+      $Sender->Render('Settings', '', 'plugins/Glue');
    }
    
    /**
