@@ -30,7 +30,6 @@ if (isset($GetHolder)) {
 }
 
 // Hooks
-add_action('init', 'glue_authenticate');
 add_action('publish_post', 'glue_add_discussion');
 add_action('comment_post', 'glue_add_comment');
 add_action('vanilla_comments', 'glue_get_comments');
@@ -39,19 +38,12 @@ add_action('wp_logout', 'glue_logout');
 add_action('admin_menu', 'glue_block_profile');
 
 /**
- * Authenticate users from Vanilla cookie.
+ * Authenticate users from Vanilla cookie instead.
  */
-function glue_authenticate() {
+function wp_validate_auth_cookie() {
    // Get & authenticate Vanilla cookie
    $auth_object = new Gdn_CookieIdentity();
-   $userid = $auth_object->GetIdentity();
-
-   // Set WordPress cookie
-   if ($userid > 0) {
-      wp_set_current_user($userid); 
-      wp_set_auth_cookie($userid, true);
-      setup_userdata($userid);
-   }
+   return $auth_object->GetIdentity();
 }
 
 /**
