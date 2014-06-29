@@ -1,7 +1,7 @@
 <?php if (!defined('APPLICATION')) exit();
 
 // Define the plugin:
-$PluginInfo['GlueIdentity'] = array(
+$PluginInfo['Glue'] = array(
    'Name' => 'Glue',
    'Description' => 'Glues WordPress to your Vanilla Forum permanently. See warnings in README.',
    'Version' => '1.3',
