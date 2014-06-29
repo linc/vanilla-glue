@@ -1,10 +1,10 @@
 <?php
 /*
 Plugin Name: Glue
-Plugin URI: 
+Plugin URI: http://github.com/lincolnwebs/glue
 Description: Glues WordPress to your Vanilla Forum.
-Author: Matt Lincoln Russell
-Version: 1.1
+Author: Lincoln Russell <lincoln@icrontic.com>
+Version: 1.3
 Author URI: http://lincolnwebs.com
 */
 
@@ -29,11 +29,19 @@ if (isset($GetHolder)) {
    unset($GetHolder);
 }
 
-// Hooks
-add_action('publish_post', 'glue_add_discussion');
-add_action('comment_post', 'glue_add_comment');
+// Hooks you can disable.
+if (C('Glue.Discussions.Add', TRUE)) {
+   add_action('publish_post', 'glue_add_discussion');
+}
+if (C('Glue.Comments.Add', TRUE)) {
+   add_action('comment_post', 'glue_add_comment');
+}
+
+// Hooks you need to invoke in your theme.
 add_action('vanilla_comments', 'glue_get_comments');
 add_action('vanilla_postinfo', 'glue_get_postinfo');
+
+// Identity integration points.
 add_action('wp_logout', 'glue_logout');
 add_action('admin_menu', 'glue_block_profile');
 
@@ -62,8 +70,8 @@ function glue_add_discussion($postid) {
    list($category) = get_the_category($postid);
    
    // CategoryID
-   $default_cat = Gdn::Config('Glue.Category.Default', 1);
-   $categoryid = Gdn::Config('Glue.Category.'.$category->name, $default_cat);
+   $default_cat = C('Glue.Category.Default', 1);
+   $categoryid = C('Glue.Category.'.$category->name, $default_cat);
 
    // Build discussion data
    $userid = intval($the_post->post_author);
