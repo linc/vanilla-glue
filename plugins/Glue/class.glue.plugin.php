@@ -2,8 +2,8 @@
 
 // Define the plugin:
 $PluginInfo['GlueIdentity'] = array(
-   'Name' => 'Glue Identity',
-   'Description' => 'Glues WordPress identity to your Vanilla Forum permanently. See warnings in README.',
+   'Name' => 'Glue',
+   'Description' => 'Glues WordPress to your Vanilla Forum permanently. See warnings in README.',
    'Version' => '1.3',
    'Author' => "Lincoln Russell",
    'AuthorEmail' => 'lincolnwebs@gmail.com',
