@@ -19,6 +19,7 @@ define('DS', DIRECTORY_SEPARATOR);
 define('PATH_ROOT', VANILLA_PATH); // Previously defined by config; do not recalculate
 
 // Include the bootstrap to configure the framework.
+require_once(PATH_ROOT.'/environment.php');
 require_once(PATH_ROOT.'/bootstrap.php');
 
 $Dispatcher = Gdn::dispatcher();
